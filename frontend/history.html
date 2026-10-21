@@ -1,0 +1,1083 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Prediction History | EduPredict</title>
+
+  <link rel="stylesheet" href="css/style.css">
+
+  <style>
+    /* ========================================
+           PREDICTION HISTORY PAGE
+           Uses the same EduPredict design system
+        ======================================== */
+
+    .history-page {
+      width: 100%;
+      max-width: 1500px;
+      margin: 0 auto;
+      padding: 32px;
+    }
+
+    .history-heading {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 20px;
+      margin-bottom: 28px;
+    }
+
+    .history-heading h1 {
+      margin-bottom: 7px;
+    }
+
+    .history-heading p {
+      font-size: 13px;
+    }
+
+    .history-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    /* Statistics */
+
+    .history-stats {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 20px;
+      margin-bottom: 26px;
+    }
+
+    .history-stat {
+      min-width: 0;
+      overflow: hidden;
+    }
+
+    .history-stat .stat-value {
+      overflow-wrap: anywhere;
+    }
+
+    /* Search and filters */
+
+    .history-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .history-search {
+      flex: 1;
+      min-width: 220px;
+      max-width: 420px;
+    }
+
+    .history-search input {
+      width: 100%;
+      min-height: 44px;
+      padding: 12px 15px;
+      color: var(--text-primary);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      outline: none;
+      font: inherit;
+      font-size: 12px;
+      transition: border-color var(--transition),
+        box-shadow var(--transition);
+    }
+
+    .history-search input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(23, 107, 112, 0.10);
+    }
+
+    .history-filter {
+      min-height: 44px;
+      padding: 10px 13px;
+      color: var(--text-primary);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      outline: none;
+      font: inherit;
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    .history-filter:focus {
+      border-color: var(--primary);
+    }
+
+    /* Table */
+
+    .history-panel {
+      padding: 24px;
+      margin-bottom: 20px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .history-panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .history-panel-header h2 {
+      font-size: 16px;
+      letter-spacing: -0.3px;
+    }
+
+    .history-table-wrapper {
+      width: 100%;
+      overflow-x: auto;
+    }
+
+    .history-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    .history-table th {
+      padding: 14px 16px;
+      color: var(--text-secondary);
+      background: #F8FAFC;
+      border-bottom: 1px solid var(--border);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.4px;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .history-table td {
+      padding: 15px 16px;
+      color: var(--text-primary);
+      border-bottom: 1px solid #EEF1F5;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .history-table tbody tr {
+      transition: background var(--transition);
+    }
+
+    .history-table tbody tr:hover {
+      background: #F9FBFC;
+    }
+
+    .history-table tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    .history-score {
+      color: var(--primary) !important;
+      font-weight: 700;
+    }
+
+    .history-category {
+      display: inline-flex;
+      align-items: center;
+      padding: 5px 9px;
+      color: var(--text-secondary);
+      background: #EEF1F5;
+      border-radius: 20px;
+      font-size: 10px;
+      font-weight: 600;
+    }
+
+    .history-category.good {
+      color: var(--success);
+      background: var(--success-light);
+    }
+
+    .history-category.average {
+      color: var(--warning);
+      background: var(--warning-light);
+    }
+
+    .history-category.low {
+      color: var(--danger);
+      background: var(--danger-light);
+    }
+
+    .history-empty {
+      padding: 35px 18px !important;
+      color: var(--text-muted) !important;
+      font-size: 12px !important;
+      line-height: 1.8;
+      text-align: center;
+      white-space: normal !important;
+    }
+
+    .history-message {
+      display: none;
+      margin-bottom: 20px;
+      padding: 14px 16px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      font-size: 12px;
+      line-height: 1.7;
+    }
+
+    .history-message.visible {
+      display: block;
+    }
+
+    .history-message.error {
+      color: var(--danger);
+      background: var(--danger-light);
+    }
+
+    .history-message.info {
+      color: var(--text-secondary);
+      background: #F7FAFC;
+    }
+
+    .history-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .history-pagination {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .history-pagination button:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .history-page-number {
+      color: var(--text-secondary);
+      font-size: 11px;
+    }
+
+    /* Responsive */
+
+    @media (max-width: 1100px) {
+      .history-stats {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 900px) {
+      .history-page {
+        padding: 24px 22px;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .history-page {
+        padding: 20px 15px;
+      }
+
+      .history-heading {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 14px;
+        margin-bottom: 22px;
+      }
+
+      .history-heading h1 {
+        font-size: 27px;
+      }
+
+      .history-stats {
+        grid-template-columns: 1fr;
+        gap: 14px;
+        margin-bottom: 20px;
+      }
+
+      .history-panel {
+        padding: 16px;
+      }
+
+      .history-toolbar {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .history-search {
+        min-width: 0;
+        max-width: none;
+      }
+
+      .history-filter {
+        width: 100%;
+      }
+
+      .history-actions {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="app-layout">
+
+    <!-- SIDEBAR: SAME AS ANALYTICS PAGE -->
+
+    <aside class="sidebar">
+
+      <a href="index.html" class="brand">
+        <div class="brand-logo">E</div>
+
+        <div>
+          <div class="brand-name">Edu<span>Predict</span></div>
+          <div class="brand-caption">Student Analytics</div>
+        </div>
+      </a>
+
+      <div class="nav-label">Workspace</div>
+
+      <nav class="nav-menu">
+
+        <a href="index.html" class="nav-link">
+          <span class="nav-icon">⌂</span>
+          <span>Overview</span>
+        </a>
+
+        <a href="predict.html" class="nav-link">
+          <span class="nav-icon">✳</span>
+          <span>Predict performance</span>
+        </a>
+
+        <a href="analytics.html" class="nav-link">
+          <span class="nav-icon">▥</span>
+          <span>Analytics</span>
+        </a>
+
+        <a href="history.html" class="nav-link active" aria-current="page">
+          <span class="nav-icon">◷</span>
+          <span>Prediction history</span>
+        </a>
+
+      </nav>
+
+      <div class="sidebar-bottom">
+
+        <div class="sidebar-note">
+          <strong>Evidence-led insights</strong>
+
+          <p>
+            Review saved model predictions and student
+            performance records. Predictions are estimates,
+            not guarantees.
+          </p>
+        </div>
+
+        <p class="small text-muted" style="margin-top:16px; padding:0 10px;">
+          EDUPREDICT 2026 · STUDENT PROJECT
+        </p>
+
+      </div>
+
+    </aside>
+
+    <!-- MAIN CONTENT -->
+
+    <main class="main-content">
+
+      <!-- TOPBAR -->
+
+      <header class="topbar">
+
+        <div class="topbar-left">
+          <div class="breadcrumb">
+            Workspace / <strong>Prediction history</strong>
+          </div>
+        </div>
+
+        <div class="topbar-right">
+          <div class="status-indicator">
+            <span class="status-dot"></span>
+            Database records
+          </div>
+        </div>
+
+      </header>
+
+      <div class="history-page">
+
+        <!-- PAGE HEADING -->
+
+        <section class="history-heading">
+
+          <div>
+            <h1>Prediction History</h1>
+
+            <p>
+              View and search student performance predictions
+              saved in the EduPredict database.
+            </p>
+          </div>
+
+          <div class="history-actions">
+
+            <button class="btn btn-secondary" id="refreshHistory" type="button">
+              ↻ Refresh history
+            </button>
+
+          </div>
+
+        </section>
+
+        <!-- STATUS MESSAGE -->
+
+        <div id="historyMessage" class="history-message" role="status" aria-live="polite">
+        </div>
+
+        <!-- STATISTICS -->
+
+        <section class="history-stats">
+
+          <article class="card stat-card history-stat">
+
+            <div class="stat-label">
+              Total predictions
+            </div>
+
+            <div class="stat-value" id="totalPredictions">
+              0
+            </div>
+
+            <div class="stat-description">
+              Records saved in SQLite
+            </div>
+
+          </article>
+
+          <article class="card stat-card history-stat">
+
+            <div class="stat-label">
+              Average predicted score
+            </div>
+
+            <div class="stat-value" id="averageScore">
+              —
+            </div>
+
+            <div class="stat-description">
+              Average of saved scores
+            </div>
+
+          </article>
+
+          <article class="card stat-card history-stat">
+
+            <div class="stat-label">
+              Highest predicted score
+            </div>
+
+            <div class="stat-value" id="highestScore">
+              —
+            </div>
+
+            <div class="stat-description">
+              Highest saved prediction
+            </div>
+
+          </article>
+
+        </section>
+
+        <!-- SEARCH AND FILTERS -->
+
+        <section class="history-toolbar">
+
+          <div class="history-search">
+            <input type="search" id="historySearch" placeholder="Search category, model, date..."
+              aria-label="Search prediction history">
+          </div>
+
+          <select id="categoryFilter" class="history-filter" aria-label="Filter by performance category">
+
+            <option value="all">
+              All performance categories
+            </option>
+
+          </select>
+
+        </section>
+
+        <!-- DATABASE RECORDS -->
+
+        <section class="history-panel">
+
+          <div class="history-panel-header">
+
+            <h2>Saved prediction records</h2>
+
+            <span class="small text-muted" id="recordCount">
+              Loading records...
+            </span>
+
+          </div>
+
+          <div class="history-table-wrapper">
+
+            <table class="history-table">
+
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Date &amp; Time</th>
+                  <th>Predicted Score</th>
+                  <th>Performance Category</th>
+                  <th>Model</th>
+                </tr>
+              </thead>
+
+              <tbody id="historyTableBody">
+
+                <tr>
+                  <td colspan="5" class="history-empty">
+                    Loading database records...
+                  </td>
+                </tr>
+
+              </tbody>
+
+            </table>
+
+          </div>
+
+          <!-- PAGINATION -->
+
+          <div class="history-footer">
+
+            <span class="small text-muted" id="showingRecords">
+              Loading...
+            </span>
+
+            <div class="history-pagination">
+
+              <button class="btn btn-secondary" id="previousPage" type="button" disabled>
+                ← Previous
+              </button>
+
+              <span class="history-page-number" id="pageNumber">
+                Page 1
+              </span>
+
+              <button class="btn btn-secondary" id="nextPage" type="button" disabled>
+                Next →
+              </button>
+
+            </div>
+
+          </div>
+
+        </section>
+
+      </div>
+
+    </main>
+
+  </div>
+
+  <!-- PROJECT SCRIPTS -->
+
+  <script src="js/api.js"></script>
+  <script src="js/app.js"></script>
+
+  <script>
+    "use strict";
+
+    const API_BASE_URL = "http://127.0.0.1:5000";
+    const PAGE_SIZE = 10;
+
+    let allHistory = [];
+    let filteredHistory = [];
+    let currentPage = 1;
+
+    const tableBody =
+      document.getElementById("historyTableBody");
+
+    const searchInput =
+      document.getElementById("historySearch");
+
+    const categoryFilter =
+      document.getElementById("categoryFilter");
+
+    const messageBox =
+      document.getElementById("historyMessage");
+
+    /* Safely display database values */
+
+    function escapeHTML(value) {
+      return String(value ?? "").replace(/[&<>"']/g, character => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;"
+      })[character]);
+    }
+
+    /* Handle numeric scores */
+
+    function getScore(record) {
+      if (
+        record.predicted_score === null ||
+        record.predicted_score === undefined ||
+        record.predicted_score === ""
+      ) {
+        return null;
+      }
+
+      const score = Number(record.predicted_score);
+
+      return Number.isFinite(score) ? score : null;
+    }
+
+    function formatScore(score) {
+      return score === null
+        ? "—"
+        : score.toFixed(2) + " / 100";
+    }
+
+    /* Category helpers */
+
+    function getCategory(record) {
+      return record.performance_category || "Unknown";
+    }
+
+    function getCategoryType(category) {
+      const value = String(category).toLowerCase();
+
+      if (
+        value.includes("excellent") ||
+        value.includes("good") ||
+        value.includes("high")
+      ) {
+        return "good";
+      }
+
+      if (
+        value.includes("average") ||
+        value.includes("satisfactory") ||
+        value.includes("moderate")
+      ) {
+        return "average";
+      }
+
+      if (
+        value.includes("needs improvement") ||
+        value.includes("poor") ||
+        value.includes("low")
+      ) {
+        return "low";
+      }
+
+      return "";
+    }
+
+    /* Format database timestamp */
+
+    function getRecordDate(record) {
+      const rawDate =
+        record.created_at ||
+        record.date ||
+        record.timestamp;
+
+      if (!rawDate) {
+        return "Date unavailable";
+      }
+
+      const date = new Date(rawDate);
+
+      if (Number.isNaN(date.getTime())) {
+        return String(rawDate);
+      }
+
+      return date.toLocaleString();
+    }
+
+    /* Display status messages */
+
+    function showMessage(message, type = "info") {
+      messageBox.textContent = message;
+      messageBox.className =
+        "history-message visible " + type;
+    }
+
+    function hideMessage() {
+      messageBox.textContent = "";
+      messageBox.className = "history-message";
+    }
+
+    /* Load records from Flask + SQLite */
+
+    async function loadHistory() {
+      const refreshButton =
+        document.getElementById("refreshHistory");
+
+      refreshButton.disabled = true;
+      refreshButton.textContent = "Loading...";
+
+      hideMessage();
+
+      tableBody.innerHTML = `
+                <tr>
+                    <td colspan="5" class="history-empty">
+                        Fetching records from the database...
+                    </td>
+                </tr>
+            `;
+
+      try {
+        const response = await fetch(
+          `${API_BASE_URL}/history`,
+          {
+            method: "GET",
+            headers: {
+              "Accept": "application/json"
+            }
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error(
+            `Server returned HTTP ${response.status}`
+          );
+        }
+
+        const result = await response.json();
+
+        if (!Array.isArray(result.history)) {
+          throw new Error(
+            "The API response does not contain a valid history list."
+          );
+        }
+
+        allHistory = result.history;
+
+        // API returns newest records first.
+        allHistory.sort((a, b) => {
+          const dateA = new Date(
+            a.created_at || a.date || 0
+          ).getTime();
+
+          const dateB = new Date(
+            b.created_at || b.date || 0
+          ).getTime();
+
+          return dateB - dateA;
+        });
+
+        renderStatistics();
+        populateCategoryFilter();
+        applyFilters();
+
+      } catch (error) {
+        console.error(
+          "Could not load prediction history:",
+          error
+        );
+
+        allHistory = [];
+        filteredHistory = [];
+
+        document.getElementById(
+          "totalPredictions"
+        ).textContent = "—";
+
+        document.getElementById(
+          "averageScore"
+        ).textContent = "—";
+
+        document.getElementById(
+          "highestScore"
+        ).textContent = "—";
+
+        document.getElementById(
+          "recordCount"
+        ).textContent = "Unavailable";
+
+        document.getElementById(
+          "showingRecords"
+        ).textContent = "Could not load records";
+
+        tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="history-empty">
+                            Could not connect to the prediction history API.
+                            <br><br>
+                            Make sure Flask is running at
+                            http://127.0.0.1:5000 and the /history endpoint
+                            is available.
+                        </td>
+                    </tr>
+                `;
+
+        showMessage(
+          "Unable to load history. Start your Flask backend and try refreshing.",
+          "error"
+        );
+
+      } finally {
+        refreshButton.disabled = false;
+        refreshButton.textContent = "↻ Refresh history";
+      }
+    }
+
+    /* Statistics */
+
+    function renderStatistics() {
+      const scores = allHistory
+        .map(getScore)
+        .filter(score => score !== null);
+
+      const average = scores.length
+        ? scores.reduce((sum, score) => sum + score, 0)
+        / scores.length
+        : null;
+
+      const highest = scores.length
+        ? Math.max(...scores)
+        : null;
+
+      document.getElementById(
+        "totalPredictions"
+      ).textContent = allHistory.length;
+
+      document.getElementById(
+        "averageScore"
+      ).textContent = formatScore(average);
+
+      document.getElementById(
+        "highestScore"
+      ).textContent = formatScore(highest);
+    }
+
+    /* Fill category filter */
+
+    function populateCategoryFilter() {
+      const previousValue = categoryFilter.value || "all";
+
+      const categories = [
+        ...new Set(allHistory.map(getCategory))
+      ].sort((a, b) => a.localeCompare(b));
+
+      categoryFilter.innerHTML = `
+                <option value="all">
+                    All performance categories
+                </option>
+                ${categories.map(category => `
+                    <option value="${escapeHTML(category)}">
+                        ${escapeHTML(category)}
+                    </option>
+                `).join("")}
+            `;
+
+      const valueExists = categories.some(
+        category => category === previousValue
+      );
+
+      categoryFilter.value =
+        valueExists ? previousValue : "all";
+    }
+
+    /* Search and category filter */
+
+    function applyFilters() {
+      const searchTerm =
+        searchInput.value.trim().toLowerCase();
+
+      const selectedCategory = categoryFilter.value;
+
+      filteredHistory = allHistory.filter(record => {
+        const category = getCategory(record);
+        const date = getRecordDate(record);
+        const model = record.model_used || "Unknown";
+        const id = String(record.id ?? "");
+
+        const matchesSearch = [
+          category,
+          date,
+          model,
+          id,
+          record.predicted_score
+        ].some(value =>
+          String(value ?? "")
+            .toLowerCase()
+            .includes(searchTerm)
+        );
+
+        const matchesCategory =
+          selectedCategory === "all" ||
+          category === selectedCategory;
+
+        return matchesSearch && matchesCategory;
+      });
+
+      currentPage = 1;
+      renderTable();
+    }
+
+    /* Render table and pagination */
+
+    function renderTable() {
+      const totalRecords = filteredHistory.length;
+
+      const totalPages = Math.max(
+        1,
+        Math.ceil(totalRecords / PAGE_SIZE)
+      );
+
+      currentPage = Math.min(currentPage, totalPages);
+
+      const startIndex = (currentPage - 1) * PAGE_SIZE;
+
+      const pageRecords = filteredHistory.slice(
+        startIndex,
+        startIndex + PAGE_SIZE
+      );
+
+      document.getElementById(
+        "recordCount"
+      ).textContent =
+        `${totalRecords} ${totalRecords === 1 ? "record" : "records"}`;
+
+      document.getElementById(
+        "pageNumber"
+      ).textContent =
+        `Page ${currentPage} of ${totalPages}`;
+
+      document.getElementById(
+        "showingRecords"
+      ).textContent = totalRecords
+          ? `Showing ${startIndex + 1}–${Math.min(
+            startIndex + PAGE_SIZE,
+            totalRecords
+          )} of ${totalRecords} records`
+          : "No records to display";
+
+      document.getElementById(
+        "previousPage"
+      ).disabled = currentPage <= 1;
+
+      document.getElementById(
+        "nextPage"
+      ).disabled = currentPage >= totalPages;
+
+      if (!pageRecords.length) {
+        tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="history-empty">
+                            ${allHistory.length
+            ? "No records match your search or selected filter."
+            : "No prediction records are saved yet. Go to Predict performance to create your first prediction."
+          }
+                        </td>
+                    </tr>
+                `;
+
+        return;
+      }
+
+      tableBody.innerHTML = pageRecords.map(record => {
+        const category = getCategory(record);
+        const categoryType = getCategoryType(category);
+        const score = getScore(record);
+
+        return `
+                    <tr>
+                        <td>
+                            #${escapeHTML(record.id ?? "—")}
+                        </td>
+
+                        <td>
+                            ${escapeHTML(getRecordDate(record))}
+                        </td>
+
+                        <td class="history-score">
+                            ${formatScore(score)}
+                        </td>
+
+                        <td>
+                            <span class="history-category ${categoryType}">
+                                ${escapeHTML(category)}
+                            </span>
+                        </td>
+
+                        <td>
+                            ${escapeHTML(record.model_used || "Unknown")}
+                        </td>
+                    </tr>
+                `;
+      }).join("");
+    }
+
+    /* Event listeners */
+
+    document
+      .getElementById("refreshHistory")
+      .addEventListener("click", loadHistory);
+
+    searchInput.addEventListener(
+      "input",
+      applyFilters
+    );
+
+    categoryFilter.addEventListener(
+      "change",
+      applyFilters
+    );
+
+    document
+      .getElementById("previousPage")
+      .addEventListener("click", () => {
+        if (currentPage > 1) {
+          currentPage--;
+          renderTable();
+        }
+      });
+
+    document
+      .getElementById("nextPage")
+      .addEventListener("click", () => {
+        const totalPages = Math.max(
+          1,
+          Math.ceil(filteredHistory.length / PAGE_SIZE)
+        );
+
+        if (currentPage < totalPages) {
+          currentPage++;
+          renderTable();
+        }
+      });
+
+    /* Initial load */
+
+    loadHistory();
+  </script>
+
+</body>
+
+</html>

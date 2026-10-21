@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Predict student exam performance using the EduPredict machine-learning model.">
+  <title>EduPredict | Predict Performance</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .prediction-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.5fr) minmax(290px, .85fr);
+      align-items: start;
+      gap: 22px;
+    }
+
+    .form-card {
+      padding: 28px;
+    }
+
+    .form-step-heading {
+      display: flex;
+      align-items: flex-start;
+      gap: 13px;
+      padding-bottom: 17px;
+      margin-bottom: 22px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .step-number {
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+      width: 35px;
+      height: 35px;
+      border-radius: 11px;
+      color: var(--primary);
+      background: var(--primary-light);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .form-step-heading h2 {
+      margin: 1px 0 5px;
+      font-size: 17px;
+    }
+
+    .form-step-heading p {
+      font-size: 12px;
+      line-height: 1.7;
+    }
+
+    .field-group {
+      margin-bottom: 18px;
+    }
+
+    .field-group:last-child {
+      margin-bottom: 0;
+    }
+
+    .form-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding-top: 22px;
+      margin-top: 24px;
+      border-top: 1px solid var(--border);
+    }
+
+    .form-footer p {
+      max-width: 310px;
+      font-size: 11px;
+      line-height: 1.7;
+    }
+
+    .result-card {
+      position: sticky;
+      top: calc(var(--header-height) + 20px);
+    }
+
+    .result-placeholder {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 270px;
+      padding: 25px 16px;
+      text-align: center;
+      border: 1px dashed #D4DEE7;
+      border-radius: 15px;
+      background: #FAFCFD;
+    }
+
+    .result-placeholder-icon {
+      display: grid;
+      place-items: center;
+      width: 65px;
+      height: 65px;
+      margin-bottom: 16px;
+      border-radius: 20px;
+      color: var(--primary);
+      background: var(--primary-light);
+      font-size: 27px;
+    }
+
+    .result-placeholder h3 {
+      margin-bottom: 8px;
+    }
+
+    .result-placeholder p {
+      max-width: 260px;
+      font-size: 12px;
+      line-height: 1.8;
+    }
+
+    .result-content {
+      display: none;
+    }
+
+    .result-content.visible {
+      display: block;
+      animation: resultReveal 400ms ease both;
+    }
+
+    .result-topline {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .result-label {
+      color: var(--text-secondary);
+      font-size: 12px;
+    }
+
+    .result-score-display {
+      margin: 17px 0 9px;
+      color: var(--primary);
+      font: 800 clamp(45px, 5vw, 62px)/1.1 'Manrope', sans-serif;
+      letter-spacing: -2.5px;
+    }
+
+    .result-score-display span {
+      color: var(--text-muted);
+      font-size: 20px;
+      font-weight: 600;
+      letter-spacing: 0;
+    }
+
+    .score-track {
+      width: 100%;
+      height: 10px;
+      overflow: hidden;
+      background: #E9EEF3;
+      border-radius: 20px;
+    }
+
+    .score-fill {
+      width: 0;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, #176B70, #56B7A6);
+      transition: width 900ms cubic-bezier(.2, .8, .2, 1);
+    }
+
+    .result-category {
+      margin-top: 16px;
+    }
+
+    .result-meta {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 22px;
+    }
+
+    .result-meta-item {
+      padding: 13px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: #FBFCFD;
+    }
+
+    .result-meta-item span {
+      display: block;
+      color: var(--text-muted);
+      font-size: 10px;
+      margin-bottom: 5px;
+    }
+
+    .result-meta-item strong {
+      display: block;
+      color: var(--navy);
+      font-size: 12px;
+      overflow-wrap: anywhere;
+    }
+
+    .result-disclaimer {
+      padding: 13px;
+      margin-top: 18px;
+      color: var(--text-secondary);
+      background: #F6F8FB;
+      border-radius: 11px;
+      font-size: 10px;
+      line-height: 1.8;
+    }
+
+    .result-error {
+      display: none;
+      margin-top: 16px;
+    }
+
+    .result-error.visible {
+      display: block;
+    }
+
+    .result-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 9px;
+      margin-top: 18px;
+    }
+
+    .model-note {
+      margin-top: 20px;
+    }
+
+    .required-mark {
+      color: var(--danger);
+    }
+
+    .select-loading {
+      color: var(--text-muted);
+      font-size: 11px;
+      margin-top: 6px;
+    }
+
+    .form-actions-mobile {
+      display: none;
+    }
+
+    @keyframes resultReveal {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @media (max-width: 1000px) {
+      .prediction-layout {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .result-card {
+        position: static;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .form-card {
+        padding: 20px;
+      }
+
+      .form-footer {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .form-footer .btn {
+        width: 100%;
+      }
+
+      .result-meta {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app-layout">
+    <aside class="sidebar" id="sidebar" aria-label="Main navigation">
+      <a class="brand" href="index.html" aria-label="EduPredict overview">
+        <div class="brand-logo" aria-hidden="true">E</div>
+        <div>
+          <div class="brand-name">Edu<span>Predict</span></div>
+          <div class="brand-caption">Student analytics</div>
+        </div>
+      </a>
+      <div class="nav-label">Workspace</div>
+      <nav class="nav-menu">
+        <a class="nav-link" href="index.html"><span class="nav-icon"
+            aria-hidden="true">⌂</span><span>Overview</span></a>
+        <a class="nav-link active" href="predict.html" aria-current="page"><span class="nav-icon"
+            aria-hidden="true">✳</span><span>Predict performance</span></a>
+        <a class="nav-link" href="analytics.html"><span class="nav-icon"
+            aria-hidden="true">▥</span><span>Analytics</span></a>
+        <a class="nav-link" href="history.html"><span class="nav-icon" aria-hidden="true">◷</span><span>Prediction
+            history</span></a>
+      </nav>
+      <div class="sidebar-bottom">
+        <div class="sidebar-note">
+          <strong>How this works</strong>
+          <p>Inputs are sent to your local Flask API, which uses the saved machine-learning model to calculate an
+            estimate.</p>
+        </div>
+        <div style="padding:16px 10px 0;color:var(--text-muted);font-size:10px;">EDUPREDICT <span
+            id="sidebarYear"></span> · STUDENT PROJECT</div>
+      </div>
+    </aside>
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <main class="main-content">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="icon-button mobile-menu-button" id="menuToggle" type="button" aria-label="Open navigation"
+            aria-expanded="false">☰</button>
+          <div class="breadcrumb">Workspace <span aria-hidden="true">/</span> <strong>Predict performance</strong></div>
+        </div>
+        <div class="topbar-right"><span class="status-indicator"><span class="status-dot"></span> Prediction
+            workspace</span></div>
+      </header>
+
+      <div class="page-container">
+        <header class="page-header animate-in">
+          <div>
+            <div class="section-kicker">Machine-learning tool</div>
+            <h1>Predict student performance</h1>
+            <p class="page-description">Enter the student's learning and background factors below. EduPredict will send
+              these values to the trained model and return an estimated exam score.</p>
+          </div>
+          <a class="btn btn-secondary" href="index.html"><span aria-hidden="true">←</span> Back to overview</a>
+        </header>
+
+        <div class="alert alert-info section animate-in delay-1" role="note">
+          <span aria-hidden="true">ⓘ</span>
+          <div><strong>Before you begin</strong> Use values that reflect the student as accurately as possible. The
+            result is a model estimate, not a guaranteed exam score or a diagnosis of ability.</div>
+        </div>
+
+        <div class="prediction-layout">
+          <form id="predictionForm" class="card form-card animate-in delay-2" novalidate>
+            <section class="form-section">
+              <div class="form-step-heading">
+                <span class="step-number">01</span>
+                <div>
+                  <h2>Learning habits</h2>
+                  <p>Study routine and academic preparation.</p>
+                </div>
+              </div>
+              <div class="form-grid">
+                <div class="form-group">
+                  <label class="form-label" for="Hours_Studied">Hours studied per week <span
+                      class="required-mark">*</span></label>
+                  <input class="form-control" id="Hours_Studied" name="Hours_Studied" type="number" min="0" max="100"
+                    step="any" placeholder="e.g. 15" required>
+                  <small class="form-help">Enter weekly study hours.</small>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="Attendance">Attendance (%) <span class="required-mark">*</span></label>
+                  <input class="form-control" id="Attendance" name="Attendance" type="number" min="0" max="100"
+                    step="any" placeholder="e.g. 85" required>
+                  <small class="form-help">Percentage from 0 to 100.</small>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="Previous_Scores">Previous scores <span
+                      class="required-mark">*</span></label>
+                  <input class="form-control" id="Previous_Scores" name="Previous_Scores" type="number" min="0"
+                    max="100" step="any" placeholder="e.g. 72" required>
+                  <small class="form-help">Previous exam score, from 0 to 100.</small>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="Tutoring_Sessions">Tutoring sessions per month <span
+                      class="required-mark">*</span></label>
+                  <input class="form-control" id="Tutoring_Sessions" name="Tutoring_Sessions" type="number" min="0"
+                    max="100" step="1" placeholder="e.g. 2" required>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="Sleep_Hours">Average sleep hours per night <span
+                      class="required-mark">*</span></label>
+                  <input class="form-control" id="Sleep_Hours" name="Sleep_Hours" type="number" min="0" max="24"
+                    step="any" placeholder="e.g. 7" required>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="Physical_Activity">Physical activity hours per week <span
+                      class="required-mark">*</span></label>
+                  <input class="form-control" id="Physical_Activity" name="Physical_Activity" type="number" min="0"
+                    max="100" step="any" placeholder="e.g. 3" required>
+                </div>
+              </div>
+            </section>
+
+            <section class="form-section">
+              <div class="form-step-heading">
+                <span class="step-number">02</span>
+                <div>
+                  <h2>Student environment</h2>
+                  <p>Choose the categories that match the student's circumstances and dataset values.</p>
+                </div>
+              </div>
+              <div class="form-grid">
+                <div class="form-group">
+                  <label class="form-label" for="Parental_Involvement">Parental involvement <span
+                      class="required-mark">*</span></label>
+                  <select class="form-control" id="Parental_Involvement" name="Parental_Involvement" required>
+                    <option value="">Choose level</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="Access_to_Resources">Access to resources <span
+                      class="required-mark">*</span></label>
+                  <select class="form-control" id="Access_to_Resources" name="Access_to_Resources" required>
+                    <option value="">Choose level</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="Extracurricular_Activities">Extracurricular activities <span
+                      class="required-mark">*</span></label>
+                  <select class="form-control" id="Extracurricular_Activities" name="Extracurricular_Activities"
+                    required>
+                    <option value="">Choose option</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="Motivation_Level">Motivation level <span
+                      class="required-mark">*</span></label>
+                  <select class="form-control" id="Motivation_Level" name="Motivation_Level" required>
+                    <option value="">Choose level</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="Internet_Access">Internet access <span
+                      class="required-mark">*</span></label>
+                  <select class="form-control" id="Internet_Access" name="Internet_Access" required>
+                    <option value="">Choose option</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="Family_Income">Family income level <span
+                      class="required-mark">*</span></label>
+                  <select class="form-control" id="Family_Income" name="Family_Income" required>
+                    <option value="">Choose level</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="Teacher_Quality">Teacher quality <span
+                      class="required-mark">*</span></label>
+                  <select class="form-control" id="Teacher_Quality" name="Teacher_Quality" required>
+                    <option value="">Choose level</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="School_Type">School type <span class="required-mark">*</span></label>
+                  <select class="form-control" id="School_Type" name="School_Type" required>
+                    <option value="">Choose type</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="Peer_Influence">Peer influence <span
+                      class="required-mark">*</span></label>
+                  <select class="form-control" id="Peer_Influence" name="Peer_Influence" required>
+                    <option value="">Choose influence</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="Learning_Disabilities">Learning disabilities <span
+                      class="required-mark">*</span></label>
+                  <select class="form-control" id="Learning_Disabilities" name="Learning_Disabilities" required>
+                    <option value="">Choose option</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="Parental_Education_Level">Parental education level <span
+                      class="required-mark">*</span></label>
+                  <select class="form-control" id="Parental_Education_Level" name="Parental_Education_Level" required>
+                    <option value="">Choose level</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="Gender">Gender <span class="required-mark">*</span></label>
+                  <select class="form-control" id="Gender" name="Gender" required>
+                    <option value="">Choose option</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="Distance_from_Home">Distance from home <span
+                      class="required-mark">*</span></label>
+                  <select class="form-control" id="Distance_from_Home" name="Distance_from_Home" required>
+                    <option value="">Choose distance</option>
+                  </select>
+                </div>
+              </div>
+              <p class="select-loading" id="featureLoadMessage" role="status">Loading valid category values from the
+                backend…</p>
+            </section>
+
+            <div id="formError" class="alert alert-danger d-none" role="alert"></div>
+            <div class="form-footer">
+              <p><span class="required-mark">*</span> All model input fields are required. Your model may perform
+                differently for students whose data differs from the training dataset.</p>
+              <div class="btn-group">
+                <button class="btn btn-secondary" type="reset" id="resetButton">Reset form</button>
+                <button class="btn btn-primary" type="submit" id="predictButton"><span aria-hidden="true">✳</span>
+                  Generate prediction <span aria-hidden="true">→</span></button>
+              </div>
+            </div>
+          </form>
+
+          <aside class="card result-card animate-in delay-3" aria-live="polite">
+            <div class="card-header">
+              <div>
+                <h2 class="card-title">Prediction result</h2>
+                <p class="card-description">Your model output will appear here.</p>
+              </div>
+              <div class="card-icon" aria-hidden="true">◈</div>
+            </div>
+
+            <div class="result-placeholder" id="resultPlaceholder">
+              <div class="result-placeholder-icon" aria-hidden="true">⌁</div>
+              <h3>Ready when you are</h3>
+              <p>Complete all required fields and select <strong>Generate prediction</strong> to request a score from
+                the trained model.</p>
+            </div>
+
+            <div class="result-content" id="resultContent">
+              <div class="result-topline">
+                <span class="result-label">Estimated exam score</span>
+                <span class="badge badge-info" id="resultModelBadge">ML model</span>
+              </div>
+              <div class="result-score-display"><span id="resultScore">—</span><span> / 100</span></div>
+              <div class="score-track" role="progressbar" aria-label="Predicted exam score" aria-valuemin="0"
+                aria-valuemax="100" aria-valuenow="0" id="scoreProgress">
+                <div class="score-fill" id="scoreFill"></div>
+              </div>
+              <div class="result-category"><span class="badge badge-neutral" id="resultCategory">Awaiting result</span>
+              </div>
+              <div class="result-meta">
+                <div class="result-meta-item"><span>Model used</span><strong id="resultModel">—</strong></div>
+                <div class="result-meta-item"><span>Generated at</span><strong id="resultTime">—</strong></div>
+              </div>
+              <div class="result-disclaimer">This is a model-generated estimate, not a guaranteed result. Category
+                labels use the project's configured thresholds. Use the output as one source of information, not as the
+                sole basis for decisions about a student.</div>
+              <div class="result-actions">
+                <button class="btn btn-primary btn-block" id="newPredictionButton" type="button">New prediction</button>
+                <a class="btn btn-secondary btn-block" href="history.html">View history →</a>
+              </div>
+            </div>
+            <div class="alert alert-danger result-error" id="resultError" role="alert"></div>
+
+            <div class="model-note alert alert-info" role="note">
+              <span aria-hidden="true">ⓘ</span>
+              <div><strong>Model connection</strong>
+                <p style="margin-top:3px;">The form loads its feature names and category choices from the API where
+                  supported. If the backend is offline or category options cannot be verified, prediction is disabled
+                  rather than guessing silently.</p>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </div>
+      <footer class="page-footer">
+        <span>© <span id="footerYear"></span> EduPredict</span>
+        <span>Predictions are estimates, not guarantees.</span>
+      </footer>
+    </main>
+  </div>
+
+  <div class="toast-container" id="toastContainer" aria-live="polite" aria-atomic="false"></div>
+
+  <script src="js/api.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/predict.js"></script>
+</body>
+
+</html>

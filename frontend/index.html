@@ -1,0 +1,2050 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EduPredict | Dashboard</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    :root {
+      --primary: #176B70;
+      --primary-light: #E7F4F3;
+      --navy: #172B4D;
+      --background: #F6F8FB;
+      --white: #FFFFFF;
+      --text: #253858;
+      --muted: #7A869A;
+      --border: #E8EDF3;
+      --green: #2E9B72;
+      --yellow: #E8A23A;
+      --red: #E05D5D;
+      --shadow: 0 5px 22px rgba(23, 43, 77, 0.045);
+      --sidebar-width: 250px;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--background);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    button,
+    a {
+      font: inherit;
+    }
+
+    a {
+      text-decoration: none;
+      color: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    .sidebar {
+      width: var(--sidebar-width);
+      height: 100vh;
+      position: fixed;
+      top: 0;
+      left: 0;
+      background: var(--white);
+      border-right: 1px solid var(--border);
+      padding: 27px 18px;
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.3s ease;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 0 10px;
+      margin-bottom: 42px;
+    }
+
+    .brand-logo {
+      width: 43px;
+      height: 43px;
+      border-radius: 13px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--primary);
+      color: white;
+      font-size: 23px;
+      font-weight: 800;
+      box-shadow: 0 5px 12px rgba(23, 107, 112, 0.2);
+    }
+
+    .brand-name {
+      color: var(--navy);
+      font-size: 19px;
+      font-weight: 800;
+      letter-spacing: -0.7px;
+    }
+
+    .brand-subtitle {
+      font-size: 10px;
+      color: var(--muted);
+      margin-top: 4px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .nav-label {
+      padding: 0 13px;
+      margin-bottom: 13px;
+      color: #9AA5B5;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1.4px;
+      text-transform: uppercase;
+    }
+
+    .nav-menu {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+
+    .nav-link {
+      display: flex;
+      align-items: center;
+      gap: 13px;
+      padding: 13px 14px;
+      border-radius: 10px;
+      color: #68778D;
+      font-size: 13px;
+      font-weight: 600;
+      transition: all 0.2s ease;
+    }
+
+    .nav-icon {
+      width: 21px;
+      text-align: center;
+      font-size: 17px;
+    }
+
+    .nav-link:hover {
+      background: #F4F8FA;
+      color: var(--primary);
+    }
+
+    .nav-link.active {
+      background: var(--primary-light);
+      color: var(--primary);
+    }
+
+    .sidebar-bottom {
+      margin-top: auto;
+      border-top: 1px solid var(--border);
+      padding: 19px 8px 0;
+    }
+
+    .sidebar-note {
+      background: #F4F8FA;
+      padding: 15px;
+      border-radius: 12px;
+    }
+
+    .sidebar-note strong {
+      display: block;
+      font-size: 12px;
+      color: var(--navy);
+      margin-bottom: 7px;
+    }
+
+    .sidebar-note p {
+      font-size: 11px;
+      line-height: 1.7;
+      color: var(--muted);
+    }
+
+    .app-layout {
+      margin-left: var(--sidebar-width);
+      min-height: 100vh;
+    }
+
+    .topbar {
+      height: 76px;
+      background: var(--white);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 35px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .breadcrumb {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .breadcrumb strong {
+      color: var(--navy);
+    }
+
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .live-indicator {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #F0F9F5;
+      border: 1px solid #D9EFE3;
+      border-radius: 30px;
+      padding: 9px 13px;
+      font-size: 11px;
+      font-weight: 600;
+      color: #267C5A;
+    }
+
+    .live-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--green);
+    }
+
+    .profile-avatar {
+      width: 37px;
+      height: 37px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 12px;
+      color: white;
+      background: var(--navy);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .mobile-menu {
+      display: none;
+      border: 0;
+      background: transparent;
+      color: var(--navy);
+      font-size: 24px;
+    }
+
+    .page-container {
+      max-width: 1600px;
+      margin: auto;
+      padding: 32px 35px 45px;
+    }
+
+    .welcome-banner {
+      background: linear-gradient(115deg, #176B70 0%, #205D70 55%, #243F68 100%);
+      border-radius: 17px;
+      padding: 30px 32px;
+      color: white;
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 27px;
+    }
+
+    .welcome-banner::before {
+      content: "";
+      width: 260px;
+      height: 260px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 50%;
+      position: absolute;
+      right: -65px;
+      top: -120px;
+    }
+
+    .welcome-banner::after {
+      content: "";
+      width: 190px;
+      height: 190px;
+      border: 1px solid rgba(255, 255, 255, 0.10);
+      border-radius: 50%;
+      position: absolute;
+      right: 35px;
+      bottom: -145px;
+    }
+
+    .welcome-label {
+      display: inline-block;
+      padding: 6px 10px;
+      border-radius: 5px;
+      background: rgba(255, 255, 255, 0.13);
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.4px;
+      margin-bottom: 15px;
+    }
+
+    .welcome-banner h1 {
+      font-size: clamp(23px, 2.5vw, 30px);
+      font-weight: 800;
+      letter-spacing: -1px;
+      margin-bottom: 10px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .welcome-banner p {
+      font-size: 13px;
+      line-height: 1.8;
+      color: rgba(255, 255, 255, 0.82);
+      max-width: 600px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .section-heading {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 15px;
+      margin: 28px 0 17px;
+    }
+
+    .section-heading h2 {
+      color: var(--navy);
+      font-size: 16px;
+      font-weight: 800;
+    }
+
+    .section-heading p {
+      color: var(--muted);
+      font-size: 11px;
+      margin-top: 5px;
+      line-height: 1.6;
+    }
+
+    .section-caption {
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .stat-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 13px;
+      padding: 21px;
+      box-shadow: var(--shadow);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      min-width: 0;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 25px rgba(23, 43, 77, 0.07);
+    }
+
+    .stat-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    .stat-label {
+      font-size: 11px;
+      color: var(--muted);
+      font-weight: 600;
+      line-height: 1.5;
+    }
+
+    .stat-icon {
+      width: 39px;
+      height: 39px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 11px;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .icon-teal {
+      background: #E5F5F3;
+    }
+
+    .icon-blue {
+      background: #EAF0FC;
+    }
+
+    .icon-orange {
+      background: #FFF3E5;
+    }
+
+    .icon-purple {
+      background: #F0EBFC;
+    }
+
+    .stat-value {
+      color: var(--navy);
+      font-size: 27px;
+      font-weight: 800;
+      letter-spacing: -0.8px;
+      overflow-wrap: anywhere;
+    }
+
+    .stat-description {
+      margin-top: 8px;
+      font-size: 10px;
+      line-height: 1.6;
+      color: var(--muted);
+    }
+
+    .quick-actions {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 15px;
+    }
+
+    .action-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      transition: all 0.2s ease;
+    }
+
+    .action-card:hover {
+      border-color: #B8DAD8;
+      transform: translateY(-2px);
+      box-shadow: var(--shadow);
+    }
+
+    .action-icon {
+      width: 43px;
+      height: 43px;
+      border-radius: 11px;
+      background: var(--primary-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+
+    .action-card h3 {
+      font-size: 12px;
+      color: var(--navy);
+      margin-bottom: 6px;
+    }
+
+    .action-card p {
+      font-size: 10px;
+      line-height: 1.6;
+      color: var(--muted);
+    }
+
+    .action-arrow {
+      margin-left: auto;
+      color: var(--primary);
+      font-size: 18px;
+    }
+
+    .charts-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 20px;
+    }
+
+    .chart-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 23px;
+      box-shadow: var(--shadow);
+      min-width: 0;
+    }
+
+    .chart-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .chart-header h3 {
+      font-size: 14px;
+      color: var(--navy);
+      font-weight: 800;
+    }
+
+    .chart-header p {
+      font-size: 10px;
+      color: var(--muted);
+      margin-top: 7px;
+      line-height: 1.6;
+    }
+
+    .chart-tag {
+      background: #F0F7F7;
+      color: var(--primary);
+      padding: 7px 9px;
+      border-radius: 7px;
+      font-size: 9px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .chart-container {
+      position: relative;
+      height: 255px;
+      width: 100%;
+    }
+
+    .score-overview {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 13px;
+    }
+
+    .score-box {
+      background: #F7F9FC;
+      border: 1px solid #EDF1F6;
+      border-radius: 11px;
+      padding: 18px 12px;
+      text-align: center;
+      min-width: 0;
+    }
+
+    .score-box .score-number {
+      font-size: 25px;
+      font-weight: 800;
+      color: var(--navy);
+      overflow-wrap: anywhere;
+    }
+
+    .score-box .score-label {
+      margin-top: 9px;
+      font-size: 10px;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .score-box.average {
+      background: #EFF8F7;
+      border-color: #DDEFEA;
+    }
+
+    .score-box.average .score-number {
+      color: var(--primary);
+    }
+
+    .score-box.highest .score-number {
+      color: var(--green);
+    }
+
+    .score-box.lowest .score-number {
+      color: var(--red);
+    }
+
+    .score-chart-wrap {
+      margin-top: 25px;
+      height: 175px;
+      position: relative;
+    }
+
+    .table-card {
+      margin-top: 20px;
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .table-card-header {
+      padding: 22px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .table-card-header h3 {
+      font-size: 14px;
+      color: var(--navy);
+    }
+
+    .table-card-header p {
+      font-size: 10px;
+      color: var(--muted);
+      margin-top: 6px;
+    }
+
+    .view-all {
+      color: var(--primary);
+      font-size: 11px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .table-wrapper {
+      width: 100%;
+      overflow-x: auto;
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    .data-table th {
+      background: #FAFBFD;
+      color: #8390A3;
+      font-size: 9px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.7px;
+      padding: 14px 22px;
+      white-space: nowrap;
+    }
+
+    .data-table td {
+      padding: 16px 22px;
+      border-top: 1px solid #F0F2F6;
+      font-size: 11px;
+      color: #526179;
+      white-space: nowrap;
+    }
+
+    .data-table tbody tr:hover {
+      background: #FAFCFD;
+    }
+
+    .record-id {
+      font-weight: 700;
+      color: var(--navy);
+    }
+
+    .score-cell {
+      font-weight: 800;
+      color: var(--navy);
+    }
+
+    .category-badge {
+      display: inline-block;
+      padding: 6px 9px;
+      border-radius: 6px;
+      font-size: 9px;
+      font-weight: 700;
+    }
+
+    .category-high {
+      background: #E5F6ED;
+      color: #238458;
+    }
+
+    .category-average {
+      background: #FFF4DF;
+      color: #A56A13;
+    }
+
+    .category-low {
+      background: #FDECEC;
+      color: #C04444;
+    }
+
+    .empty-state {
+      padding: 40px 20px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.8;
+    }
+
+    .empty-state .empty-icon {
+      display: block;
+      font-size: 29px;
+      margin-bottom: 12px;
+    }
+
+    .footer {
+      text-align: center;
+      padding: 28px 10px 0;
+      color: #98A3B3;
+      font-size: 10px;
+    }
+
+    .toast {
+      position: fixed;
+      right: 25px;
+      bottom: 25px;
+      padding: 13px 18px;
+      border-radius: 10px;
+      background: var(--navy);
+      color: white;
+      font-size: 12px;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+      z-index: 2000;
+      display: none;
+      max-width: calc(100vw - 40px);
+    }
+
+    .toast.show {
+      display: block;
+      animation: slideUp 0.25s ease;
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @media (max-width: 1200px) {
+      .stats-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .page-container {
+        padding: 28px 25px 40px;
+      }
+
+      .topbar {
+        padding: 0 25px;
+      }
+    }
+
+    @media (max-width: 900px) {
+      .sidebar {
+        transform: translateX(-100%);
+        box-shadow: none;
+      }
+
+      .sidebar.open {
+        transform: translateX(0);
+        box-shadow: 10px 0 35px rgba(0, 0, 0, 0.12);
+      }
+
+      .app-layout {
+        margin-left: 0;
+      }
+
+      .mobile-menu {
+        display: block;
+      }
+
+      .topbar-left {
+        display: flex;
+        align-items: center;
+        gap: 13px;
+      }
+
+      .charts-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .page-container {
+        padding: 20px 15px 30px;
+      }
+
+      .topbar {
+        height: 65px;
+        padding: 0 15px;
+      }
+
+      .breadcrumb {
+        font-size: 11px;
+      }
+
+      .live-indicator {
+        padding: 8px;
+        font-size: 9px;
+      }
+
+      .profile-avatar {
+        width: 32px;
+        height: 32px;
+      }
+
+      .welcome-banner {
+        padding: 24px 20px;
+        margin-bottom: 20px;
+      }
+
+      .welcome-banner h1 {
+        font-size: 24px;
+      }
+
+      .stats-grid {
+        gap: 11px;
+      }
+
+      .stat-card {
+        padding: 15px;
+      }
+
+      .stat-value {
+        font-size: 23px;
+      }
+
+      .stat-top {
+        align-items: flex-start;
+        margin-bottom: 15px;
+      }
+
+      .stat-icon {
+        width: 33px;
+        height: 33px;
+        font-size: 15px;
+      }
+
+      .quick-actions {
+        grid-template-columns: 1fr;
+      }
+
+      .chart-card {
+        padding: 17px;
+      }
+
+      .chart-container {
+        height: 230px;
+      }
+
+      .score-overview {
+        gap: 8px;
+      }
+
+      .score-box {
+        padding: 14px 7px;
+      }
+
+      .score-box .score-number {
+        font-size: 20px;
+      }
+
+      .section-heading {
+        align-items: flex-start;
+      }
+
+      .table-card-header {
+        padding: 18px;
+      }
+
+      .data-table th,
+      .data-table td {
+        padding: 13px 15px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+
+    <a href="index.html" class="brand">
+      <div class="brand-logo">E</div>
+      <div>
+        <div class="brand-name">EduPredict</div>
+        <div class="brand-subtitle">Student Analytics</div>
+      </div>
+    </a>
+
+    <div class="nav-label">Workspace</div>
+
+    <ul class="nav-menu">
+      <li>
+        <a href="index.html" class="nav-link active">
+          <span class="nav-icon">▦</span>
+          <span>Overview</span>
+        </a>
+      </li>
+
+      <li>
+        <a href="predict.html" class="nav-link">
+          <span class="nav-icon">◎</span>
+          <span>Predict Performance</span>
+        </a>
+      </li>
+
+      <li>
+        <a href="analytics.html" class="nav-link">
+          <span class="nav-icon">▥</span>
+          <span>Analytics</span>
+        </a>
+      </li>
+
+      <li>
+        <a href="history.html" class="nav-link">
+          <span class="nav-icon">◷</span>
+          <span>Prediction History</span>
+        </a>
+      </li>
+    </ul>
+
+    <div class="sidebar-bottom">
+      <div class="sidebar-note">
+        <strong>✦ Smart Education</strong>
+        <p>Use machine learning insights to understand student performance and support better learning outcomes.</p>
+      </div>
+    </div>
+
+  </aside>
+
+  <!-- Main layout -->
+  <div class="app-layout">
+
+    <!-- Topbar -->
+    <header class="topbar">
+
+      <div class="topbar-left">
+        <button class="mobile-menu" id="mobileMenu" aria-label="Open navigation">
+          ☰
+        </button>
+
+        <div class="breadcrumb">
+          Workspace / <strong>Overview</strong>
+        </div>
+      </div>
+
+      <div class="topbar-right">
+        <div class="live-indicator">
+          <span class="live-dot"></span>
+          <span id="connectionLabel">Connecting...</span>
+        </div>
+
+        <div class="profile-avatar">EP</div>
+      </div>
+
+    </header>
+
+    <main class="page-container">
+
+      <!-- Welcome banner -->
+      <section class="welcome-banner">
+        <span class="welcome-label">EDUCATION INTELLIGENCE</span>
+
+        <h1>Student Performance Dashboard</h1>
+
+        <p>
+          Welcome to EduPredict. Explore machine learning predictions,
+          monitor student performance, and discover meaningful insights
+          through your saved prediction data.
+        </p>
+      </section>
+
+      <!-- Statistics -->
+      <section class="stats-grid">
+
+        <article class="stat-card">
+          <div class="stat-top">
+            <div class="stat-label">Total Predictions</div>
+            <div class="stat-icon icon-teal">◎</div>
+          </div>
+
+          <div class="stat-value" id="totalPredictions">—</div>
+
+          <div class="stat-description">
+            Total records saved in the database
+          </div>
+        </article>
+
+        <article class="stat-card">
+          <div class="stat-top">
+            <div class="stat-label">Average Predicted Score</div>
+            <div class="stat-icon icon-blue">↗</div>
+          </div>
+
+          <div class="stat-value" id="averageScore">—</div>
+
+          <div class="stat-description">
+            Average score across all predictions
+          </div>
+        </article>
+
+        <article class="stat-card">
+          <div class="stat-top">
+            <div class="stat-label">Model Accuracy (R²)</div>
+            <div class="stat-icon icon-orange">✧</div>
+          </div>
+
+          <div class="stat-value" id="modelAccuracy">—</div>
+
+          <div class="stat-description">
+            Model evaluation score from training
+          </div>
+        </article>
+
+        <article class="stat-card">
+          <div class="stat-top">
+            <div class="stat-label">Model Features</div>
+            <div class="stat-icon icon-purple">▤</div>
+          </div>
+
+          <div class="stat-value" id="featureCount">—</div>
+
+          <div class="stat-description">
+            Input variables used for prediction
+          </div>
+        </article>
+
+      </section>
+
+      <!-- Quick actions -->
+      <section>
+        <div class="section-heading">
+          <div>
+            <h2>Quick Actions</h2>
+            <p>Access your most-used project features.</p>
+          </div>
+        </div>
+
+        <div class="quick-actions">
+
+          <a href="predict.html" class="action-card">
+            <div class="action-icon">🎯</div>
+            <div>
+              <h3>Predict Performance</h3>
+              <p>Enter student details and generate a prediction.</p>
+            </div>
+            <span class="action-arrow">→</span>
+          </a>
+
+          <a href="analytics.html" class="action-card">
+            <div class="action-icon">📊</div>
+            <div>
+              <h3>Explore Analytics</h3>
+              <p>Review performance patterns and statistics.</p>
+            </div>
+            <span class="action-arrow">→</span>
+          </a>
+
+          <a href="history.html" class="action-card">
+            <div class="action-icon">📋</div>
+            <div>
+              <h3>Prediction History</h3>
+              <p>Review previously saved prediction records.</p>
+            </div>
+            <span class="action-arrow">→</span>
+          </a>
+
+        </div>
+      </section>
+
+      <!-- Charts -->
+      <section>
+
+        <div class="section-heading">
+          <div>
+            <h2>Performance Insights</h2>
+            <p>Visual analysis of predictions stored in your database.</p>
+          </div>
+
+          <span class="section-caption" id="lastUpdated">
+            Loading data...
+          </span>
+        </div>
+
+        <div class="charts-grid">
+
+          <!-- Performance distribution -->
+          <article class="chart-card">
+
+            <div class="chart-header">
+              <div>
+                <h3>Performance Distribution</h3>
+                <p>Breakdown of students by predicted performance category.</p>
+              </div>
+
+              <span class="chart-tag">DISTRIBUTION</span>
+            </div>
+
+            <div class="chart-container" id="distributionContainer">
+              <canvas id="distributionChart"></canvas>
+            </div>
+
+            <div class="empty-state" id="distributionEmpty" hidden>
+              <span class="empty-icon">📊</span>
+              No predictions available yet.<br>
+              Generate a prediction to see the distribution.
+            </div>
+
+          </article>
+
+          <!-- Prediction trend -->
+          <article class="chart-card">
+
+            <div class="chart-header">
+              <div>
+                <h3>Prediction Trend</h3>
+                <p>Average predicted score over time.</p>
+              </div>
+
+              <span class="chart-tag">TREND</span>
+            </div>
+
+            <div class="chart-container" id="trendContainer">
+              <canvas id="trendChart"></canvas>
+            </div>
+
+            <div class="empty-state" id="trendEmpty" hidden>
+              <span class="empty-icon">📈</span>
+              Your prediction trend will appear here<br>
+              after you generate predictions.
+            </div>
+
+          </article>
+
+          <!-- Score overview -->
+          <article class="chart-card">
+
+            <div class="chart-header">
+              <div>
+                <h3>Score Overview</h3>
+                <p>Key statistics calculated from saved predictions.</p>
+              </div>
+
+              <span class="chart-tag">SCORE ANALYSIS</span>
+            </div>
+
+            <div class="score-overview">
+
+              <div class="score-box average">
+                <div class="score-number" id="overviewAverage">—</div>
+                <div class="score-label">Average Score</div>
+              </div>
+
+              <div class="score-box highest">
+                <div class="score-number" id="overviewHighest">—</div>
+                <div class="score-label">Highest Score</div>
+              </div>
+
+              <div class="score-box lowest">
+                <div class="score-number" id="overviewLowest">—</div>
+                <div class="score-label">Lowest Score</div>
+              </div>
+
+            </div>
+
+            <div class="score-chart-wrap" id="scoreChartContainer">
+              <canvas id="scoreChart"></canvas>
+            </div>
+
+            <div class="empty-state" id="scoreEmpty" hidden>
+              Score statistics will appear after your first prediction.
+            </div>
+
+          </article>
+
+          <!-- Prediction category comparison -->
+          <article class="chart-card">
+
+            <div class="chart-header">
+              <div>
+                <h3>Category Comparison</h3>
+                <p>Number of saved predictions in each performance category.</p>
+              </div>
+
+              <span class="chart-tag">COMPARISON</span>
+            </div>
+
+            <div class="chart-container" id="comparisonContainer">
+              <canvas id="comparisonChart"></canvas>
+            </div>
+
+            <div class="empty-state" id="comparisonEmpty" hidden>
+              <span class="empty-icon">📉</span>
+              Category comparisons will appear here<br>
+              after you generate predictions.
+            </div>
+
+          </article>
+
+        </div>
+
+      </section>
+
+      <!-- Recent predictions table -->
+      <section class="table-card">
+
+        <div class="table-card-header">
+          <div>
+            <h3>Recent Predictions</h3>
+            <p>Your latest records retrieved from the database.</p>
+          </div>
+
+          <a href="history.html" class="view-all">
+            View All Records →
+          </a>
+        </div>
+
+        <div class="table-wrapper" id="recentTableWrapper">
+
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Record ID</th>
+                <th>Date & Time</th>
+                <th>Predicted Score</th>
+                <th>Performance</th>
+                <th>Model</th>
+              </tr>
+            </thead>
+
+            <tbody id="recentPredictionsBody">
+              <tr>
+                <td colspan="5" class="empty-state">
+                  Loading prediction records...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+        </div>
+
+      </section>
+
+      <footer class="footer">
+        EduPredict · Machine Learning for Student Performance Analysis
+      </footer>
+
+    </main>
+
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const EDUPREDICT_API_BASE = "http://127.0.0.1:5000";
+
+    let distributionChart = null;
+    let trendChart = null;
+    let scoreChart = null;
+    let comparisonChart = null;
+
+    document.addEventListener("DOMContentLoaded", () => {
+      setupMobileNavigation();
+      loadDashboard();
+    });
+
+    function setupMobileNavigation() {
+      const menuButton = document.getElementById("mobileMenu");
+      const sidebar = document.getElementById("sidebar");
+
+      menuButton.addEventListener("click", () => {
+        sidebar.classList.toggle("open");
+      });
+
+      document.addEventListener("click", (event) => {
+        if (
+          window.innerWidth <= 900 &&
+          !sidebar.contains(event.target) &&
+          !menuButton.contains(event.target)
+        ) {
+          sidebar.classList.remove("open");
+        }
+      });
+    }
+
+    async function loadDashboard() {
+      const connectionLabel = document.getElementById("connectionLabel");
+
+      try {
+        const [statusResponse, featuresResponse, historyResponse] =
+          await Promise.all([
+            fetch(`${EDUPREDICT_API_BASE}/`),
+            fetch(`${EDUPREDICT_API_BASE}/features`),
+            fetch(`${EDUPREDICT_API_BASE}/history`)
+          ]);
+
+        if (!statusResponse.ok) {
+          throw new Error("Backend status request failed.");
+        }
+
+        if (!featuresResponse.ok) {
+          throw new Error("Feature request failed.");
+        }
+
+        if (!historyResponse.ok) {
+          throw new Error("History request failed.");
+        }
+
+        const statusData = await statusResponse.json();
+        const featuresData = await featuresResponse.json();
+        const historyData = await historyResponse.json();
+
+        connectionLabel.textContent = "API Connected";
+
+        const features = extractFeatures(featuresData);
+        const records = Array.isArray(historyData.history)
+          ? historyData.history
+          : [];
+
+        updateFeatureCount(features);
+        updateModelAccuracy(statusData);
+        updateStatistics(records);
+        renderCharts(records);
+        renderRecentPredictions(records);
+
+        document.getElementById("lastUpdated").textContent =
+          "Updated " + new Date().toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit"
+          });
+
+      } catch (error) {
+        console.error("Dashboard loading error:", error);
+
+        connectionLabel.textContent = "API Disconnected";
+
+        document.getElementById("totalPredictions").textContent = "—";
+        document.getElementById("averageScore").textContent = "—";
+        document.getElementById("featureCount").textContent = "—";
+        document.getElementById("modelAccuracy").textContent = "—";
+
+        showEmptyCharts(
+          "Backend unavailable. Start Flask and refresh this page."
+        );
+
+        document.getElementById("recentPredictionsBody").innerHTML = `
+                    <tr>
+                        <td colspan="5" class="empty-state">
+                            Unable to load records. Make sure your Flask
+                            backend is running at ${EDUPREDICT_API_BASE}.
+                        </td>
+                    </tr>
+                `;
+
+        document.getElementById("lastUpdated").textContent =
+          "Data unavailable";
+      }
+    }
+
+    function extractFeatures(data) {
+      if (Array.isArray(data)) {
+        return data;
+      }
+
+      if (data && Array.isArray(data.features)) {
+        return data.features;
+      }
+
+      if (data && Array.isArray(data.feature_columns)) {
+        return data.feature_columns;
+      }
+
+      if (data && Array.isArray(data.columns)) {
+        return data.columns;
+      }
+
+      return [];
+    }
+
+    function updateFeatureCount(features) {
+      document.getElementById("featureCount").textContent =
+        features.length || "—";
+    }
+
+    function updateModelAccuracy(statusData) {
+      const accuracyElement = document.getElementById("modelAccuracy");
+
+      /*
+        R² is a training/evaluation metric, not a live prediction
+        accuracy calculation. Display it only if the backend provides it.
+      */
+      const possibleValues = [
+        statusData.r2,
+        statusData.r2_score,
+        statusData.model_r2,
+        statusData.model_metrics &&
+        statusData.model_metrics.r2
+      ];
+
+      const r2 = possibleValues.find(
+        value => typeof value === "number" && Number.isFinite(value)
+      );
+
+      if (r2 !== undefined) {
+        accuracyElement.textContent = (r2 * 100).toFixed(1) + "%";
+        accuracyElement.title =
+          "R² score displayed as a percentage; this is not classification accuracy.";
+      } else {
+        accuracyElement.textContent = "N/A";
+        accuracyElement.title =
+          "Training R² was not returned by the backend.";
+      }
+    }
+
+    function getNumericScore(record) {
+      const score = Number(record.predicted_score);
+
+      return Number.isFinite(score) ? score : null;
+    }
+
+    function updateStatistics(records) {
+      const scores = records
+        .map(getNumericScore)
+        .filter(score => score !== null);
+
+      document.getElementById("totalPredictions").textContent =
+        records.length.toLocaleString();
+
+      if (scores.length === 0) {
+        document.getElementById("averageScore").textContent = "—";
+        document.getElementById("overviewAverage").textContent = "—";
+        document.getElementById("overviewHighest").textContent = "—";
+        document.getElementById("overviewLowest").textContent = "—";
+        return;
+      }
+
+      const average = scores.reduce((sum, score) => sum + score, 0)
+        / scores.length;
+
+      const highest = Math.max(...scores);
+      const lowest = Math.min(...scores);
+
+      document.getElementById("averageScore").textContent =
+        average.toFixed(1);
+
+      document.getElementById("overviewAverage").textContent =
+        average.toFixed(1);
+
+      document.getElementById("overviewHighest").textContent =
+        highest.toFixed(1);
+
+      document.getElementById("overviewLowest").textContent =
+        lowest.toFixed(1);
+    }
+
+    function getCategory(record) {
+      const category = String(
+        record.performance_category || "Unknown"
+      ).toLowerCase().trim();
+
+      if (
+        category.includes("high") ||
+        category.includes("good") ||
+        category.includes("excellent")
+      ) {
+        return "High";
+      }
+
+      if (
+        category.includes("average") ||
+        category.includes("medium") ||
+        category.includes("moderate")
+      ) {
+        return "Average";
+      }
+
+      if (
+        category.includes("low") ||
+        category.includes("poor")
+      ) {
+        return "Low";
+      }
+
+      return "Other";
+    }
+
+    function renderCharts(records) {
+      const counts = {
+        High: 0,
+        Average: 0,
+        Low: 0,
+        Other: 0
+      };
+
+      records.forEach(record => {
+        counts[getCategory(record)]++;
+      });
+
+      renderDistributionChart(counts, records.length);
+      renderTrendChart(records);
+      renderScoreChart(records);
+      renderComparisonChart(counts, records.length);
+    }
+
+    function renderDistributionChart(counts, total) {
+      const empty = document.getElementById("distributionEmpty");
+      const container = document.getElementById("distributionContainer");
+
+      if (distributionChart) {
+        distributionChart.destroy();
+        distributionChart = null;
+      }
+
+      if (!total) {
+        container.hidden = true;
+        empty.hidden = false;
+        return;
+      }
+
+      container.hidden = false;
+      empty.hidden = true;
+
+      distributionChart = new Chart(
+        document.getElementById("distributionChart"),
+        {
+          type: "doughnut",
+
+          data: {
+            labels: ["High", "Average", "Low", "Other"],
+
+            datasets: [{
+              data: [
+                counts.High,
+                counts.Average,
+                counts.Low,
+                counts.Other
+              ],
+
+              backgroundColor: [
+                "#2E9B72",
+                "#E8A23A",
+                "#E05D5D",
+                "#A8B2C1"
+              ],
+
+              borderWidth: 3,
+              borderColor: "#FFFFFF",
+              hoverOffset: 7
+            }]
+          },
+
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: "69%",
+
+            plugins: {
+              legend: {
+                position: "bottom",
+                labels: {
+                  usePointStyle: true,
+                  pointStyle: "circle",
+                  padding: 19,
+                  color: "#68778D",
+                  font: {
+                    family: "Inter",
+                    size: 10
+                  }
+                }
+              },
+
+              tooltip: {
+                callbacks: {
+                  label: function (context) {
+                    const value = context.raw;
+                    const percentage = total
+                      ? ((value / total) * 100).toFixed(1)
+                      : 0;
+
+                    return `${context.label}: ${value} (${percentage}%)`;
+                  }
+                }
+              }
+            }
+          }
+        }
+      );
+    }
+
+    function renderTrendChart(records) {
+      const empty = document.getElementById("trendEmpty");
+      const container = document.getElementById("trendContainer");
+
+      if (trendChart) {
+        trendChart.destroy();
+        trendChart = null;
+      }
+
+      const grouped = {};
+
+      records.forEach(record => {
+        const score = getNumericScore(record);
+        const date = parseRecordDate(record);
+
+        if (score === null || !date) {
+          return;
+        }
+
+        const key = date.toLocaleDateString("en-CA");
+
+        if (!grouped[key]) {
+          grouped[key] = {
+            total: 0,
+            count: 0
+          };
+        }
+
+        grouped[key].total += score;
+        grouped[key].count++;
+      });
+
+      const dates = Object.keys(grouped).sort();
+
+      if (!dates.length) {
+        container.hidden = true;
+        empty.hidden = false;
+        return;
+      }
+
+      container.hidden = false;
+      empty.hidden = true;
+
+      const labels = dates.map(key => {
+        const date = new Date(key + "T12:00:00");
+
+        return date.toLocaleDateString("en-IN", {
+          day: "numeric",
+          month: "short"
+        });
+      });
+
+      const averages = dates.map(key =>
+        grouped[key].total / grouped[key].count
+      );
+
+      trendChart = new Chart(
+        document.getElementById("trendChart"),
+        {
+          type: "line",
+
+          data: {
+            labels,
+
+            datasets: [{
+              label: "Average Predicted Score",
+              data: averages,
+              borderColor: "#176B70",
+              backgroundColor: "rgba(23, 107, 112, 0.10)",
+              fill: true,
+              tension: 0.35,
+              borderWidth: 3,
+              pointRadius: 4,
+              pointHoverRadius: 6,
+              pointBackgroundColor: "#176B70"
+            }]
+          },
+
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+
+            interaction: {
+              intersect: false,
+              mode: "index"
+            },
+
+            plugins: {
+              legend: {
+                display: false
+              },
+
+              tooltip: {
+                callbacks: {
+                  label: context =>
+                    "Average score: " +
+                    context.parsed.y.toFixed(2)
+                }
+              }
+            },
+
+            scales: {
+              x: {
+                grid: {
+                  display: false
+                },
+
+                ticks: {
+                  color: "#8390A3",
+                  font: {
+                    family: "Inter",
+                    size: 10
+                  }
+                }
+              },
+
+              y: {
+                beginAtZero: true,
+
+                grid: {
+                  color: "#EDF1F6"
+                },
+
+                ticks: {
+                  color: "#8390A3",
+                  font: {
+                    family: "Inter",
+                    size: 10
+                  }
+                }
+              }
+            }
+          }
+        }
+      );
+    }
+
+    function renderScoreChart(records) {
+      const empty = document.getElementById("scoreEmpty");
+      const container = document.getElementById("scoreChartContainer");
+
+      if (scoreChart) {
+        scoreChart.destroy();
+        scoreChart = null;
+      }
+
+      const scores = records
+        .map(getNumericScore)
+        .filter(score => score !== null);
+
+      if (!scores.length) {
+        container.hidden = true;
+        empty.hidden = false;
+        return;
+      }
+
+      container.hidden = false;
+      empty.hidden = true;
+
+      const average = scores.reduce((sum, score) => sum + score, 0)
+        / scores.length;
+
+      scoreChart = new Chart(
+        document.getElementById("scoreChart"),
+        {
+          type: "bar",
+
+          data: {
+            labels: ["Average", "Highest", "Lowest"],
+
+            datasets: [{
+              label: "Predicted Score",
+
+              data: [
+                average,
+                Math.max(...scores),
+                Math.min(...scores)
+              ],
+
+              backgroundColor: [
+                "#176B70",
+                "#2E9B72",
+                "#E05D5D"
+              ],
+
+              borderRadius: 7,
+              maxBarThickness: 42
+            }]
+          },
+
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+
+            plugins: {
+              legend: {
+                display: false
+              }
+            },
+
+            scales: {
+              x: {
+                grid: {
+                  display: false
+                },
+
+                ticks: {
+                  color: "#68778D",
+                  font: {
+                    family: "Inter",
+                    size: 10
+                  }
+                }
+              },
+
+              y: {
+                beginAtZero: true,
+
+                grid: {
+                  color: "#EDF1F6"
+                },
+
+                ticks: {
+                  color: "#8390A3",
+                  font: {
+                    family: "Inter",
+                    size: 9
+                  }
+                }
+              }
+            }
+          }
+        }
+      );
+    }
+
+    function renderComparisonChart(counts, total) {
+      const empty = document.getElementById("comparisonEmpty");
+      const container = document.getElementById("comparisonContainer");
+
+      if (comparisonChart) {
+        comparisonChart.destroy();
+        comparisonChart = null;
+      }
+
+      if (!total) {
+        container.hidden = true;
+        empty.hidden = false;
+        return;
+      }
+
+      container.hidden = false;
+      empty.hidden = true;
+
+      comparisonChart = new Chart(
+        document.getElementById("comparisonChart"),
+        {
+          type: "bar",
+
+          data: {
+            labels: ["High", "Average", "Low", "Other"],
+
+            datasets: [{
+              label: "Number of Predictions",
+
+              data: [
+                counts.High,
+                counts.Average,
+                counts.Low,
+                counts.Other
+              ],
+
+              backgroundColor: [
+                "#2E9B72",
+                "#E8A23A",
+                "#E05D5D",
+                "#A8B2C1"
+              ],
+
+              borderRadius: 7,
+              maxBarThickness: 50
+            }]
+          },
+
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+
+            plugins: {
+              legend: {
+                display: false
+              }
+            },
+
+            scales: {
+              x: {
+                grid: {
+                  display: false
+                },
+
+                ticks: {
+                  color: "#68778D",
+                  font: {
+                    family: "Inter",
+                    size: 10
+                  }
+                }
+              },
+
+              y: {
+                beginAtZero: true,
+
+                ticks: {
+                  precision: 0,
+                  color: "#8390A3",
+                  font: {
+                    family: "Inter",
+                    size: 10
+                  }
+                },
+
+                grid: {
+                  color: "#EDF1F6"
+                }
+              }
+            }
+          }
+        }
+      );
+    }
+
+    function renderRecentPredictions(records) {
+      const tbody = document.getElementById("recentPredictionsBody");
+
+      if (!records.length) {
+        tbody.innerHTML = `
+                    <tr>
+                        <td colspan="5">
+                            <div class="empty-state">
+                                <span class="empty-icon">📋</span>
+                                No prediction records found yet.<br>
+                                <a href="predict.html" class="view-all">
+                                    Generate your first prediction →
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+
+        return;
+      }
+
+      const sorted = [...records].sort((a, b) => {
+        const dateA = parseRecordDate(a);
+        const dateB = parseRecordDate(b);
+
+        return (dateB ? dateB.getTime() : 0)
+          - (dateA ? dateA.getTime() : 0);
+      });
+
+      tbody.innerHTML = sorted.slice(0, 5).map(record => {
+        const score = getNumericScore(record);
+        const category = getCategory(record);
+        const date = parseRecordDate(record);
+
+        let badgeClass = "";
+
+        if (category === "High") {
+          badgeClass = "category-high";
+        } else if (category === "Average") {
+          badgeClass = "category-average";
+        } else if (category === "Low") {
+          badgeClass = "category-low";
+        }
+
+        const displayCategory =
+          record.performance_category || "Unknown";
+
+        const displayDate = date
+          ? date.toLocaleString("en-IN", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit"
+          })
+          : "Date unavailable";
+
+        const modelName = record.model_used || "ML Model";
+
+        return `
+                    <tr>
+                        <td class="record-id">#${escapeHTML(record.id ?? "—")}</td>
+
+                        <td>${escapeHTML(displayDate)}</td>
+
+                        <td class="score-cell">
+                            ${score === null ? "—" : score.toFixed(2)}
+                        </td>
+
+                        <td>
+                            <span class="category-badge ${badgeClass}">
+                                ${escapeHTML(displayCategory)}
+                            </span>
+                        </td>
+
+                        <td>${escapeHTML(modelName)}</td>
+                    </tr>
+                `;
+      }).join("");
+    }
+
+    function parseRecordDate(record) {
+      const rawDate =
+        record.created_at ||
+        record.date ||
+        record.timestamp;
+
+      if (!rawDate) {
+        return null;
+      }
+
+      const date = new Date(rawDate);
+
+      return Number.isNaN(date.getTime()) ? null : date;
+    }
+
+    function escapeHTML(value) {
+      return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function showEmptyCharts(message) {
+      const sections = [
+        ["distributionContainer", "distributionEmpty"],
+        ["trendContainer", "trendEmpty"],
+        ["scoreChartContainer", "scoreEmpty"],
+        ["comparisonContainer", "comparisonEmpty"]
+      ];
+
+      sections.forEach(([containerId, emptyId]) => {
+        document.getElementById(containerId).hidden = true;
+
+        const empty = document.getElementById(emptyId);
+        empty.hidden = false;
+        empty.textContent = message;
+      });
+    }
+  </script>
+
+</body>
+
+</html>
