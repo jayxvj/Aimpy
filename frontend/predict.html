@@ -6,8 +6,44 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Predict student exam performance using the EduPredict machine-learning model.">
   <title>EduPredict | Predict Performance</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/auth.css">
+  <script>
+    (function () {
+      const theme = localStorage.getItem("ep_theme") ||
+        (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+      document.documentElement.setAttribute("data-theme", theme);
+    })();
+  </script>
   <style>
+    html[data-theme="dark"] .result-placeholder {
+      border-color: #184755;
+      background: #071F27;
+    }
+
+    html[data-theme="dark"] .result-meta-item {
+      background: #071F27;
+      border-color: #184755;
+    }
+
+    html[data-theme="dark"] .score-track {
+      background: #0E303D;
+    }
+
+    html[data-theme="dark"] .step-number {
+      background: #0E303D;
+      color: #7AB2B2;
+    }
+
+    html[data-theme="dark"] .result-placeholder h3 {
+      color: #EBF4F6;
+    }
+
+    html[data-theme="dark"] .result-placeholder p {
+      color: #B1DBE3;
+    }
+
     .prediction-layout {
       display: grid;
       grid-template-columns: minmax(0, 1.5fr) minmax(290px, .85fr);
@@ -116,7 +152,7 @@
     }
 
     .result-content {
-      display: none;
+      display: block;
     }
 
     .result-content.visible {
@@ -162,7 +198,7 @@
       width: 0;
       height: 100%;
       border-radius: inherit;
-      background: linear-gradient(90deg, #176B70, #56B7A6);
+      background: linear-gradient(90deg, #09637E, #088395);
       transition: width 900ms cubic-bezier(.2, .8, .2, 1);
     }
 
@@ -288,7 +324,7 @@
 <body>
   <div class="app-layout">
     <aside class="sidebar" id="sidebar" aria-label="Main navigation">
-      <a class="brand" href="index.html" aria-label="EduPredict overview">
+      <a class="brand" href="index.html" aria-label="EduPredict home">
         <div class="brand-logo" aria-hidden="true">E</div>
         <div>
           <div class="brand-name">Edu<span>Predict</span></div>
@@ -298,23 +334,14 @@
       <div class="nav-label">Workspace</div>
       <nav class="nav-menu">
         <a class="nav-link" href="index.html"><span class="nav-icon"
-            aria-hidden="true">⌂</span><span>Overview</span></a>
+            aria-hidden="true">⌂</span><span>Home</span></a>
         <a class="nav-link active" href="predict.html" aria-current="page"><span class="nav-icon"
             aria-hidden="true">✳</span><span>Predict performance</span></a>
         <a class="nav-link" href="analytics.html"><span class="nav-icon"
-            aria-hidden="true">▥</span><span>Analytics</span></a>
+            aria-hidden="true">▥</span><span>Analytics/Dashboard</span></a>
         <a class="nav-link" href="history.html"><span class="nav-icon" aria-hidden="true">◷</span><span>Prediction
             history</span></a>
       </nav>
-      <div class="sidebar-bottom">
-        <div class="sidebar-note">
-          <strong>How this works</strong>
-          <p>Inputs are sent to your local Flask API, which uses the saved machine-learning model to calculate an
-            estimate.</p>
-        </div>
-        <div style="padding:16px 10px 0;color:var(--text-muted);font-size:10px;">EDUPREDICT <span
-            id="sidebarYear"></span> · STUDENT PROJECT</div>
-      </div>
     </aside>
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
@@ -325,8 +352,12 @@
             aria-expanded="false">☰</button>
           <div class="breadcrumb">Workspace <span aria-hidden="true">/</span> <strong>Predict performance</strong></div>
         </div>
-        <div class="topbar-right"><span class="status-indicator"><span class="status-dot"></span> Prediction
-            workspace</span></div>
+        <div class="topbar-right">
+          <button class="theme-switch" id="themeSwitch" type="button" aria-label="Toggle dark / light mode" title="Toggle dark / light mode">
+            <span class="knob"><i class="fa-solid fa-moon"></i></span>
+          </button>
+          <span class="status-indicator"><span class="status-dot"></span> Prediction workspace</span>
+        </div>
       </header>
 
       <div class="page-container">
@@ -337,8 +368,55 @@
             <p class="page-description">Enter the student's learning and background factors below. EduPredict will send
               these values to the trained model and return an estimated exam score.</p>
           </div>
-          <a class="btn btn-secondary" href="index.html"><span aria-hidden="true">←</span> Back to overview</a>
+          <a class="btn btn-secondary" href="index.html"><span aria-hidden="true">←</span> Back to Home</a>
         </header>
+
+        <!-- Summary Statistics Cards -->
+        <section class="stats-grid animate-in delay-1" aria-label="Model and Prediction Statistics">
+          <article class="stat-card">
+            <div class="stat-top">
+              <div class="stat-label">Total Predictions</div>
+              <div class="stat-icon icon-teal">◎</div>
+            </div>
+            <div class="stat-value" id="totalPredictions">—</div>
+            <div class="stat-description">
+              Total records saved in the database
+            </div>
+          </article>
+
+          <article class="stat-card">
+            <div class="stat-top">
+              <div class="stat-label">Average Predicted Score</div>
+              <div class="stat-icon icon-blue">↗</div>
+            </div>
+            <div class="stat-value" id="averageScore">—</div>
+            <div class="stat-description">
+              Average score across all predictions
+            </div>
+          </article>
+
+          <article class="stat-card">
+            <div class="stat-top">
+              <div class="stat-label">Model Accuracy (R²)</div>
+              <div class="stat-icon icon-orange">✧</div>
+            </div>
+            <div class="stat-value" id="modelAccuracy">—</div>
+            <div class="stat-description">
+              Model evaluation score from training
+            </div>
+          </article>
+
+          <article class="stat-card">
+            <div class="stat-top">
+              <div class="stat-label">Model Features</div>
+              <div class="stat-icon icon-purple">▤</div>
+            </div>
+            <div class="stat-value" id="featureCount">—</div>
+            <div class="stat-description">
+              Input variables used for prediction
+            </div>
+          </article>
+        </section>
 
         <div class="alert alert-info section animate-in delay-1" role="note">
           <span aria-hidden="true">ⓘ</span>
@@ -523,27 +601,20 @@
               <div class="card-icon" aria-hidden="true">◈</div>
             </div>
 
-            <div class="result-placeholder" id="resultPlaceholder">
-              <div class="result-placeholder-icon" aria-hidden="true">⌁</div>
-              <h3>Ready when you are</h3>
-              <p>Complete all required fields and select <strong>Generate prediction</strong> to request a score from
-                the trained model.</p>
-            </div>
-
-            <div class="result-content" id="resultContent">
+            <div class="result-content visible" id="resultContent">
               <div class="result-topline">
                 <span class="result-label">Estimated exam score</span>
-                <span class="badge badge-info" id="resultModelBadge">ML model</span>
+                <span class="badge badge-info" id="resultModelBadge">Linear Regression</span>
               </div>
               <div class="result-score-display"><span id="resultScore">—</span><span> / 100</span></div>
               <div class="score-track" role="progressbar" aria-label="Predicted exam score" aria-valuemin="0"
                 aria-valuemax="100" aria-valuenow="0" id="scoreProgress">
                 <div class="score-fill" id="scoreFill"></div>
               </div>
-              <div class="result-category"><span class="badge badge-neutral" id="resultCategory">Awaiting result</span>
+              <div class="result-category"><span class="badge badge-neutral" id="resultCategory">Awaiting prediction</span>
               </div>
               <div class="result-meta">
-                <div class="result-meta-item"><span>Model used</span><strong id="resultModel">—</strong></div>
+                <div class="result-meta-item"><span>Model used</span><strong id="resultModel">Linear Regression</strong></div>
                 <div class="result-meta-item"><span>Generated at</span><strong id="resultTime">—</strong></div>
               </div>
               <div class="result-disclaimer">This is a model-generated estimate, not a guaranteed result. Category
@@ -555,15 +626,6 @@
               </div>
             </div>
             <div class="alert alert-danger result-error" id="resultError" role="alert"></div>
-
-            <div class="model-note alert alert-info" role="note">
-              <span aria-hidden="true">ⓘ</span>
-              <div><strong>Model connection</strong>
-                <p style="margin-top:3px;">The form loads its feature names and category choices from the API where
-                  supported. If the backend is offline or category options cannot be verified, prediction is disabled
-                  rather than guessing silently.</p>
-              </div>
-            </div>
           </aside>
         </div>
       </div>
@@ -579,6 +641,31 @@
   <script src="js/api.js"></script>
   <script src="js/app.js"></script>
   <script src="js/predict.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    (function () {
+      const switchBtn = document.getElementById("themeSwitch");
+      function updateSwitchIcon(theme) {
+        if (!switchBtn) return;
+        const icon = switchBtn.querySelector("i");
+        if (icon) {
+          icon.className = theme === "dark" ? "fa-solid fa-moon" : "fa-solid fa-sun";
+        }
+      }
+      const initialTheme = document.documentElement.getAttribute("data-theme") || "light";
+      updateSwitchIcon(initialTheme);
+
+      if (switchBtn) {
+        switchBtn.addEventListener("click", () => {
+          const current = document.documentElement.getAttribute("data-theme") || "light";
+          const next = current === "dark" ? "light" : "dark";
+          document.documentElement.setAttribute("data-theme", next);
+          localStorage.setItem("ep_theme", next);
+          updateSwitchIcon(next);
+        });
+      }
+    })();
+  </script>
 </body>
 
 </html>

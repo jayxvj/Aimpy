@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login &amp; Register | EduPredict</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/auth.css">
+  <script>
+    (function () {
+      const theme = localStorage.getItem("ep_theme") ||
+        (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+      document.documentElement.setAttribute("data-theme", theme);
+    })();
+  </script>
+</head>
+<body style="min-height: 100vh; display: flex; align-items: center; justify-content: center; background: var(--background);">
+  <script src="js/auth.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      // Open the login modal immediately on this dedicated login route
+      window.EduPredictAuth.openModal("login");
+    });
+  </script>
+</body>
+</html>

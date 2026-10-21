@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="EduPredict Admin Profile — Manage unique ID, college details, and profile photo.">
+  <title>Admin Profile | EduPredict</title>
+
+  <!-- Google Fonts & FontAwesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/auth.css">
+
+  <!-- Immediate Theme Initializer -->
+  <script>
+    (function () {
+      const theme = localStorage.getItem("ep_theme") ||
+        (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+      document.documentElement.setAttribute("data-theme", theme);
+    })();
+  </script>
+
+  <style>
+    .profile-layout {
+      display: grid;
+      grid-template-columns: minmax(280px, 340px) minmax(0, 1fr);
+      gap: 24px;
+      align-items: start;
+    }
+
+    @media (max-width: 900px) {
+      .profile-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .profile-avatar-card {
+      text-align: center;
+      padding: 36px 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .avatar-wrapper {
+      position: relative;
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      margin-bottom: 20px;
+      box-shadow: 0 8px 24px rgba(9, 99, 126, 0.15);
+    }
+
+    .avatar-img {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      object-fit: cover;
+      background: #088395;
+      color: #FFFFFF;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 42px;
+      font-weight: 800;
+      border: 4px solid var(--surface);
+    }
+
+    .avatar-upload-btn {
+      position: absolute;
+      bottom: 2px;
+      right: 2px;
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: #09637E;
+      color: #FFFFFF;
+      border: 3px solid var(--surface);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all var(--transition);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    .avatar-upload-btn:hover {
+      background: #088395;
+      transform: scale(1.08);
+    }
+
+    .profile-name {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--navy);
+      margin-bottom: 4px;
+    }
+
+    .profile-role-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 700;
+      background: var(--primary-light);
+      color: var(--primary);
+      margin-bottom: 16px;
+    }
+
+    html[data-theme="dark"] .profile-role-badge {
+      background: #0E303D;
+      color: #7AB2B2;
+    }
+
+    /* Unique ID Highlight Chip */
+    .unique-id-card {
+      width: 100%;
+      padding: 14px;
+      background: var(--surface-hover);
+      border: 1px dashed var(--border);
+      border-radius: var(--radius-md);
+      margin-bottom: 20px;
+      text-align: left;
+    }
+
+    .unique-id-card .label {
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .unique-id-display {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      font-family: monospace;
+      font-size: 15px;
+      font-weight: 700;
+      color: #088395;
+    }
+
+    .copy-id-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 13px;
+      transition: all 0.2s;
+    }
+
+    .copy-id-btn:hover {
+      color: var(--primary);
+      background: var(--surface);
+    }
+
+    .profile-meta-list {
+      width: 100%;
+      text-align: left;
+      font-size: 12px;
+      color: var(--text-secondary);
+      border-top: 1px solid var(--border);
+      padding-top: 16px;
+      margin-bottom: 20px;
+    }
+
+    .profile-meta-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .profile-meta-item i {
+      width: 18px;
+      color: #088395;
+    }
+
+    .logout-btn-wrap {
+      width: 100%;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app-layout">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar" aria-label="Main navigation">
+      <a href="index.html" class="brand" aria-label="EduPredict Home">
+        <div class="brand-logo" aria-hidden="true">E</div>
+        <div>
+          <div class="brand-name">Edu<span>Predict</span></div>
+          <div class="brand-caption">Student Analytics</div>
+        </div>
+      </a>
+
+      <div class="nav-label">Workspace</div>
+
+      <nav class="nav-menu">
+        <a href="index.html" class="nav-link">
+          <span class="nav-icon" aria-hidden="true">⌂</span>
+          <span>Home</span>
+        </a>
+        <a href="predict.html" class="nav-link">
+          <span class="nav-icon" aria-hidden="true">✳</span>
+          <span>Predict performance</span>
+        </a>
+        <a href="analytics.html" class="nav-link">
+          <span class="nav-icon" aria-hidden="true">▥</span>
+          <span>Analytics/Dashboard</span>
+        </a>
+        <a href="history.html" class="nav-link">
+          <span class="nav-icon" aria-hidden="true">◷</span>
+          <span>Prediction history</span>
+        </a>
+        <a href="profile.html" class="nav-link active" aria-current="page">
+          <span class="nav-icon" aria-hidden="true"><i class="fa-solid fa-circle-user"></i></span>
+          <span>My Profile</span>
+        </a>
+      </nav>
+    </aside>
+
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+
+      <!-- TOPBAR -->
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="icon-button mobile-menu-button" id="menuToggle" type="button" aria-label="Open navigation"
+            aria-expanded="false">☰</button>
+          <div class="breadcrumb">
+            Workspace <span aria-hidden="true">/</span> <strong>My Profile</strong>
+          </div>
+        </div>
+
+        <div class="topbar-right">
+          <!-- Dark / Light Mode Switcher -->
+          <button class="theme-switch" id="themeSwitch" type="button" aria-label="Toggle dark / light mode"
+            title="Toggle dark / light mode">
+            <span class="knob"><i class="fa-solid fa-moon"></i></span>
+          </button>
+          <div class="status-indicator">
+            <span class="status-dot"></span>
+            Profile Verified
+          </div>
+        </div>
+      </header>
+
+      <div class="page-container">
+
+        <!-- PAGE HEADER -->
+        <header class="page-header animate-in">
+          <div>
+            <div class="section-kicker" style="font-size:11px; font-weight:800; letter-spacing:1px; color:#088395; text-transform:uppercase; margin-bottom:4px;">
+              Admin Settings
+            </div>
+            <h1>Administrator Profile</h1>
+            <p class="page-description">
+              View your registered unique ID, academic credentials, and update institution details and profile photo.
+            </p>
+          </div>
+          <button class="btn btn-secondary" id="logoutBtn" type="button">
+            <i class="fa-solid fa-right-from-bracket"></i> Log Out
+          </button>
+        </header>
+
+        <!-- PROFILE LAYOUT -->
+        <div class="profile-layout animate-in">
+
+          <!-- LEFT COLUMN: AVATAR & UNIQUE ID -->
+          <div class="card profile-avatar-card">
+            <div class="avatar-wrapper">
+              <div class="avatar-img" id="avatarPreview">U</div>
+              <label class="avatar-upload-btn" for="avatarFileInput" title="Upload Profile Picture">
+                <i class="fa-solid fa-camera"></i>
+              </label>
+              <input type="file" id="avatarFileInput" accept="image/*" style="display:none;">
+            </div>
+
+            <div class="profile-name" id="sidebarProfileName">Loading...</div>
+            <div class="profile-role-badge">
+              <i class="fa-solid fa-shield-halved"></i> Verified Admin
+            </div>
+
+            <!-- UNIQUE ID CHIP -->
+            <div class="unique-id-card">
+              <div class="label">
+                <span>Unique Student/Admin ID</span>
+                <i class="fa-solid fa-fingerprint"></i>
+              </div>
+              <div class="unique-id-display">
+                <span id="displayUniqueId">EDU-2026-XXXXX</span>
+                <button class="copy-id-btn" id="copyIdBtn" type="button" title="Copy Unique ID">
+                  <i class="fa-regular fa-copy"></i>
+                </button>
+              </div>
+            </div>
+
+            <div class="profile-meta-list">
+              <div class="profile-meta-item">
+                <i class="fa-regular fa-envelope"></i>
+                <span id="metaUsername">—</span>
+              </div>
+              <div class="profile-meta-item">
+                <i class="fa-regular fa-calendar"></i>
+                <span id="metaCreatedAt">Registered User</span>
+              </div>
+            </div>
+
+            <div class="logout-btn-wrap">
+              <button class="btn btn-secondary btn-block" id="logoutBtnAlt" type="button">
+                <i class="fa-solid fa-arrow-right-from-bracket"></i> Sign Out
+              </button>
+            </div>
+          </div>
+
+          <!-- RIGHT COLUMN: EDITABLE DETAILS FORM -->
+          <div class="card" style="padding: 28px;">
+            <div class="card-header" style="margin-bottom: 18px;">
+              <div>
+                <h2 class="card-title">Personal &amp; Academic Credentials</h2>
+                <p class="card-description">All profile updates are immediately synchronized with the secure backend database.</p>
+              </div>
+              <div class="card-icon"><i class="fa-solid fa-id-card"></i></div>
+            </div>
+
+            <div id="profileAlert" class="auth-alert" role="alert"></div>
+
+            <form id="profileEditForm">
+              <div class="form-grid">
+                <div class="form-group">
+                  <label class="form-label" for="profileName">Full Name *</label>
+                  <input class="form-control" id="profileName" type="text" required placeholder="Your full name">
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="profileUsername">Admin ID / Username (Locked)</label>
+                  <input class="form-control" id="profileUsername" type="text" readonly disabled style="opacity: 0.75; cursor: not-allowed;">
+                </div>
+              </div>
+
+              <div class="form-grid">
+                <div class="form-group">
+                  <label class="form-label" for="profileCollege">College / University Name</label>
+                  <input class="form-control" id="profileCollege" type="text" placeholder="e.g. Delhi Technological University">
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="profileBranch">Academic Branch / Department</label>
+                  <input class="form-control" id="profileBranch" type="text" placeholder="e.g. Computer Science &amp; Engineering">
+                </div>
+              </div>
+
+              <div class="form-grid">
+                <div class="form-group">
+                  <label class="form-label" for="profileYear">Academic Year</label>
+                  <select class="form-control" id="profileYear">
+                    <option value="1st Year">1st Year</option>
+                    <option value="2nd Year">2nd Year</option>
+                    <option value="3rd Year">3rd Year</option>
+                    <option value="4th Year">4th Year</option>
+                    <option value="Post Graduate">Post Graduate</option>
+                    <option value="Faculty / Admin">Faculty / Admin</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="profileLocation">Location / City</label>
+                  <input class="form-control" id="profileLocation" type="text" placeholder="e.g. Bengaluru, Karnataka">
+                </div>
+              </div>
+
+              <div style="margin-top: 24px; display: flex; justify-content: flex-end; gap: 12px;">
+                <button class="btn btn-primary" id="saveProfileBtn" type="submit">
+                  <i class="fa-solid fa-floppy-disk"></i> Save Profile Changes
+                </button>
+              </div>
+            </form>
+          </div>
+
+        </div>
+
+      </div>
+
+      <footer class="page-footer">
+        <span>© 2026 EduPredict · Predictive Analytics for Education</span>
+        <span>Color Palette: #09637E · #088395 · #7AB2B2 · #EBF4F6</span>
+      </footer>
+    </main>
+  </div>
+
+  <script src="js/auth.js"></script>
+  <script>
+    "use strict";
+
+    let currentProfilePic = "";
+
+    function loadProfileData() {
+      const user = window.EduPredictAuth ? window.EduPredictAuth.getUser() : null;
+      if (!user) return;
+
+      document.getElementById("sidebarProfileName").textContent = user.name || "Administrator";
+      document.getElementById("displayUniqueId").textContent = user.unique_id || "EDU-2026-N/A";
+      document.getElementById("metaUsername").textContent = user.username || "—";
+      if (user.created_at) {
+        try {
+          const d = new Date(user.created_at);
+          document.getElementById("metaCreatedAt").textContent = `Member since ${d.toLocaleDateString("en-IN", { month: "short", year: "numeric" })}`;
+        } catch (e) {}
+      }
+
+      // Populate Inputs
+      document.getElementById("profileName").value = user.name || "";
+      document.getElementById("profileUsername").value = user.username || "";
+      document.getElementById("profileCollege").value = user.college_name || "";
+      document.getElementById("profileBranch").value = user.branch || "";
+      if (user.year) document.getElementById("profileYear").value = user.year;
+      document.getElementById("profileLocation").value = user.location || "";
+
+      // Avatar
+      updateAvatarDisplay(user.profile_pic, user.name);
+      currentProfilePic = user.profile_pic || "";
+    }
+
+    function updateAvatarDisplay(picUrl, name) {
+      const container = document.getElementById("avatarPreview");
+      if (picUrl) {
+        container.innerHTML = `<img src="${picUrl}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
+      } else {
+        container.textContent = (name && name[0]) ? name[0].toUpperCase() : "U";
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      loadProfileData();
+
+      // Theme Switcher Sync
+      const switchBtn = document.getElementById("themeSwitch");
+      function updateSwitchIcon(theme) {
+        if (!switchBtn) return;
+        const icon = switchBtn.querySelector("i");
+        if (icon) {
+          icon.className = theme === "dark" ? "fa-solid fa-moon" : "fa-solid fa-sun";
+        }
+      }
+      const initialTheme = document.documentElement.getAttribute("data-theme") || "light";
+      updateSwitchIcon(initialTheme);
+
+      if (switchBtn) {
+        switchBtn.addEventListener("click", () => {
+          const cur = document.documentElement.getAttribute("data-theme") || "light";
+          const next = cur === "dark" ? "light" : "dark";
+          document.documentElement.setAttribute("data-theme", next);
+          localStorage.setItem("ep_theme", next);
+          updateSwitchIcon(next);
+        });
+      }
+
+      // Copy ID button
+      document.getElementById("copyIdBtn").addEventListener("click", () => {
+        const idText = document.getElementById("displayUniqueId").textContent;
+        navigator.clipboard.writeText(idText).then(() => {
+          const btn = document.getElementById("copyIdBtn");
+          btn.innerHTML = '<i class="fa-solid fa-check" style="color:#088395;"></i>';
+          setTimeout(() => {
+            btn.innerHTML = '<i class="fa-regular fa-copy"></i>';
+          }, 1500);
+        });
+      });
+
+      // Avatar File Upload (Converts to Base64)
+      document.getElementById("avatarFileInput").addEventListener("change", (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        if (file.size > 2 * 1024 * 1024) {
+          alert("Image is too large. Please select an image under 2MB.");
+          return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          currentProfilePic = event.target.result;
+          updateAvatarDisplay(currentProfilePic, document.getElementById("profileName").value);
+        };
+        reader.readAsDataURL(file);
+      });
+
+      // Save Profile Form
+      document.getElementById("profileEditForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const user = window.EduPredictAuth ? window.EduPredictAuth.getUser() : null;
+        if (!user || !user.unique_id) return;
+
+        const btn = document.getElementById("saveProfileBtn");
+        const alertBox = document.getElementById("profileAlert");
+
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
+        alertBox.className = "auth-alert";
+        alertBox.style.display = "none";
+
+        const updatedData = {
+          unique_id: user.unique_id,
+          name: document.getElementById("profileName").value.trim(),
+          college_name: document.getElementById("profileCollege").value.trim(),
+          branch: document.getElementById("profileBranch").value.trim(),
+          year: document.getElementById("profileYear").value,
+          location: document.getElementById("profileLocation").value.trim(),
+          profile_pic: currentProfilePic
+        };
+
+        try {
+          const res = await fetch(`${window.EduPredictAuth.API_URL}/auth/profile`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(updatedData)
+          });
+          const data = await res.json();
+          if (!res.ok || !data.success) {
+            throw new Error(data.error || "Failed to update profile");
+          }
+
+          // Save updated data to localStorage
+          window.EduPredictAuth.saveUser(data.user);
+          loadProfileData();
+
+          alertBox.textContent = "✓ Profile details updated successfully!";
+          alertBox.className = "auth-alert success visible";
+          alertBox.style.display = "block";
+        } catch (err) {
+          alertBox.textContent = err.message || "Failed to save profile changes";
+          alertBox.className = "auth-alert error visible";
+          alertBox.style.display = "block";
+        } finally {
+          btn.disabled = false;
+          btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Save Profile Changes';
+        }
+      });
+
+      // Logout buttons
+      const handleLogout = () => {
+        if (confirm("Are you sure you want to sign out?")) {
+          window.EduPredictAuth.logout();
+        }
+      };
+      document.getElementById("logoutBtn").addEventListener("click", handleLogout);
+      document.getElementById("logoutBtnAlt").addEventListener("click", handleLogout);
+
+      // Mobile Menu Toggle
+      const menuToggle = document.getElementById("menuToggle");
+      const sidebar = document.getElementById("sidebar");
+      const overlay = document.getElementById("sidebarOverlay");
+      if (menuToggle && sidebar) {
+        menuToggle.addEventListener("click", () => {
+          const isOpen = sidebar.classList.toggle("open");
+          if (overlay) overlay.classList.toggle("visible", isOpen);
+        });
+      }
+      if (overlay) {
+        overlay.addEventListener("click", () => {
+          if (sidebar) sidebar.classList.remove("open");
+          overlay.classList.remove("visible");
+        });
+      }
+    });
+  </script>
+</body>
+
+</html>

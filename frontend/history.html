@@ -7,9 +7,70 @@
 
   <title>Prediction History | EduPredict</title>
 
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/auth.css">
+
+  <script>
+    (function () {
+      const theme = localStorage.getItem("ep_theme") ||
+        (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+      document.documentElement.setAttribute("data-theme", theme);
+    })();
+  </script>
 
   <style>
+    /* Dark Theme Overrides for History Page */
+    html[data-theme="dark"] .history-search input,
+    html[data-theme="dark"] .history-filter {
+      background: #071F27;
+      color: #EBF4F6;
+      border-color: #184755;
+    }
+
+    html[data-theme="dark"] .history-panel {
+      background: #09242E;
+      border-color: #184755;
+    }
+
+    html[data-theme="dark"] .history-table th {
+      background: #071F27;
+      color: #7AB2B2;
+      border-bottom-color: #184755;
+    }
+
+    html[data-theme="dark"] .history-table td {
+      color: #EBF4F6;
+      border-bottom-color: #184755;
+    }
+
+    html[data-theme="dark"] .history-table tbody tr:hover {
+      background: #0E303D;
+    }
+
+    html[data-theme="dark"] .history-category {
+      background: #0E303D;
+      color: #B1DBE3;
+    }
+
+    html[data-theme="dark"] .history-message.info {
+      background: #071F27;
+      color: #B1DBE3;
+      border-color: #184755;
+    }
+
+    html[data-theme="dark"] .pagination-button {
+      background: #071F27;
+      color: #EBF4F6;
+      border-color: #184755;
+    }
+
+    html[data-theme="dark"] .pagination-button:hover:not(:disabled) {
+      background: #088395;
+      color: #FFFFFF;
+      border-color: #088395;
+    }
+
     /* ========================================
            PREDICTION HISTORY PAGE
            Uses the same EduPredict design system
@@ -358,7 +419,7 @@
 
         <a href="index.html" class="nav-link">
           <span class="nav-icon">⌂</span>
-          <span>Overview</span>
+          <span>Home</span>
         </a>
 
         <a href="predict.html" class="nav-link">
@@ -368,7 +429,7 @@
 
         <a href="analytics.html" class="nav-link">
           <span class="nav-icon">▥</span>
-          <span>Analytics</span>
+          <span>Analytics/Dashboard</span>
         </a>
 
         <a href="history.html" class="nav-link active" aria-current="page">
@@ -377,24 +438,6 @@
         </a>
 
       </nav>
-
-      <div class="sidebar-bottom">
-
-        <div class="sidebar-note">
-          <strong>Evidence-led insights</strong>
-
-          <p>
-            Review saved model predictions and student
-            performance records. Predictions are estimates,
-            not guarantees.
-          </p>
-        </div>
-
-        <p class="small text-muted" style="margin-top:16px; padding:0 10px;">
-          EDUPREDICT 2026 · STUDENT PROJECT
-        </p>
-
-      </div>
 
     </aside>
 
@@ -413,6 +456,9 @@
         </div>
 
         <div class="topbar-right">
+          <button class="theme-switch" id="themeSwitch" type="button" aria-label="Toggle dark / light mode" title="Toggle dark / light mode">
+            <span class="knob"><i class="fa-solid fa-moon"></i></span>
+          </button>
           <div class="status-indicator">
             <span class="status-dot"></span>
             Database records
@@ -1076,7 +1122,32 @@
     /* Initial load */
 
     loadHistory();
+
+    /* Theme Switcher Handler */
+    (function () {
+      const switchBtn = document.getElementById("themeSwitch");
+      function updateSwitchIcon(theme) {
+        if (!switchBtn) return;
+        const icon = switchBtn.querySelector("i");
+        if (icon) {
+          icon.className = theme === "dark" ? "fa-solid fa-moon" : "fa-solid fa-sun";
+        }
+      }
+      const initialTheme = document.documentElement.getAttribute("data-theme") || "light";
+      updateSwitchIcon(initialTheme);
+
+      if (switchBtn) {
+        switchBtn.addEventListener("click", () => {
+          const current = document.documentElement.getAttribute("data-theme") || "light";
+          const next = current === "dark" ? "light" : "dark";
+          document.documentElement.setAttribute("data-theme", next);
+          localStorage.setItem("ep_theme", next);
+          updateSwitchIcon(next);
+        });
+      }
+    })();
   </script>
+  <script src="js/auth.js"></script>
 
 </body>
 

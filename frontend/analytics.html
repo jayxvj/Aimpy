@@ -4,16 +4,32 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="EduPredict Analytics and Dashboard — Explore student performance distributions, factor correlations, and multivariate radars.">
+  <title>Analytics/Dashboard | EduPredict</title>
 
-  <title>Analytics | EduPredict</title>
-
+  <!-- Google Fonts & FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/auth.css">
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Immediate Theme Initializer -->
+  <script>
+    (function () {
+      const theme = localStorage.getItem("ep_theme") ||
+        (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+      document.documentElement.setAttribute("data-theme", theme);
+    })();
+  </script>
 
   <style>
-    /* ========================================
-       ANALYTICS PAGE
-       Uses the existing EduPredict design system
-    ======================================== */
+    /* =====================================================
+       ANALYTICS / DASHBOARD STYLES
+       Palette: #09637E | #088395 | #7AB2B2 | #EBF4F6
+       High-contrast typography in both Dark and Light modes
+       ===================================================== */
 
     .analytics-page {
       width: 100%;
@@ -25,286 +41,303 @@
     .analytics-heading {
       display: flex;
       justify-content: space-between;
-      align-items: center;
+      align-items: flex-start;
       flex-wrap: wrap;
       gap: 20px;
-      margin-bottom: 28px;
+      margin-bottom: 24px;
     }
 
     .analytics-heading h1 {
-      margin-bottom: 7px;
+      margin-bottom: 6px;
     }
 
     .analytics-heading p {
       font-size: 13px;
+      max-width: 680px;
+      line-height: 1.7;
     }
 
-    /* Statistics */
-
-    .analytics-stats {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 20px;
-      margin-bottom: 26px;
-    }
-
-    .analytics-stat {
-      position: relative;
-      min-width: 0;
-      overflow: hidden;
-    }
-
-    .analytics-stat .stat-label {
-      position: relative;
-      z-index: 1;
-    }
-
-    .analytics-stat .stat-value {
-      overflow-wrap: anywhere;
-    }
-
-    /* Analytics panels */
-
-    .analytics-panels {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 20px;
-      margin-bottom: 26px;
-    }
-
-    .analytics-panel {
-      min-width: 0;
-      padding: 24px;
+    /* Soft Filter Bar */
+    .filter-section {
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius-lg);
+      padding: 18px 22px;
+      margin-bottom: 26px;
       box-shadow: var(--shadow-sm);
+      transition: background var(--transition), border-color var(--transition);
     }
 
-    .analytics-panel-header {
+    .filter-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
+      flex-wrap: wrap;
       gap: 12px;
-      margin-bottom: 24px;
+      margin-bottom: 14px;
     }
 
-    .analytics-panel-header h2 {
-      font-size: 16px;
-      letter-spacing: -0.3px;
-    }
-
-    /* Performance distribution */
-
-    .distribution-list {
+    .filter-title {
       display: flex;
-      flex-direction: column;
-      gap: 24px;
-    }
-
-    .distribution-item {
-      min-width: 0;
-    }
-
-    .distribution-info {
-      display: flex;
-      justify-content: space-between;
       align-items: center;
-      gap: 12px;
-      margin-bottom: 10px;
+      gap: 9px;
+      font-family: 'Manrope', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--navy);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
     }
 
-    .distribution-name {
+    .filter-title i {
+      color: #088395;
+      font-size: 14px;
+    }
+
+    .filter-status-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      background: var(--primary-light);
+      color: var(--primary);
+    }
+
+    html[data-theme="dark"] .filter-status-chip {
+      background: #0E303D;
+      color: #7AB2B2;
+    }
+
+    .filter-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .soft-filter-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 16px;
+      border-radius: 40px;
+      border: 1px solid var(--border);
+      background: var(--surface-hover);
       color: var(--text-primary);
       font-size: 12px;
       font-weight: 600;
-      overflow-wrap: anywhere;
+      cursor: pointer;
+      transition: all var(--transition);
+      user-select: none;
     }
 
-    .distribution-count {
-      color: var(--text-secondary);
+    .soft-filter-btn .soft-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--surface);
+      color: #088395;
+      font-size: 12px;
+      box-shadow: 0 2px 6px rgba(9, 99, 126, 0.08);
+      transition: all var(--transition);
+    }
+
+    .soft-filter-btn .filter-count {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 20px;
+      height: 20px;
+      padding: 0 6px;
+      border-radius: 10px;
       font-size: 11px;
-      white-space: nowrap;
+      font-weight: 700;
+      background: rgba(9, 99, 126, 0.12);
+      color: var(--primary);
+      transition: all var(--transition);
     }
 
-    .distribution-track {
-      height: 8px;
-      width: 100%;
-      overflow: hidden;
-      background: #E9EEF3;
-      border-radius: 20px;
+    .soft-filter-btn:hover {
+      border-color: #088395;
+      transform: translateY(-1px);
     }
 
-    .distribution-bar {
-      height: 100%;
-      width: 0;
-      border-radius: inherit;
-      transition: width 500ms ease;
-      background: var(--primary);
+    .soft-filter-btn.active {
+      background: #09637E;
+      color: #FFFFFF;
+      border-color: #09637E;
+      box-shadow: 0 4px 14px rgba(9, 99, 126, 0.28);
     }
 
-    .distribution-bar.good {
-      background: var(--success);
+    .soft-filter-btn.active .soft-icon {
+      background: rgba(255, 255, 255, 0.22);
+      color: #FFFFFF;
     }
 
-    .distribution-bar.average {
-      background: #DDAA36;
+    .soft-filter-btn.active .filter-count {
+      background: rgba(255, 255, 255, 0.25);
+      color: #FFFFFF;
     }
 
-    .distribution-bar.low {
-      background: #D96A6A;
+    html[data-theme="dark"] .soft-filter-btn {
+      background: #071F27;
+      border-color: #184755;
+      color: #EBF4F6;
     }
 
-    /* Recent predictions */
+    html[data-theme="dark"] .soft-filter-btn .soft-icon {
+      background: #0E303D;
+      color: #7AB2B2;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    }
 
-    .recent-list {
+    html[data-theme="dark"] .soft-filter-btn .filter-count {
+      background: rgba(122, 178, 178, 0.2);
+      color: #7AB2B2;
+    }
+
+    html[data-theme="dark"] .soft-filter-btn:hover {
+      border-color: #7AB2B2;
+    }
+
+    html[data-theme="dark"] .soft-filter-btn.active {
+      background: #088395;
+      border-color: #088395;
+      color: #FFFFFF;
+      box-shadow: 0 4px 16px rgba(8, 131, 149, 0.45);
+    }
+
+    html[data-theme="dark"] .soft-filter-btn.active .soft-icon {
+      background: rgba(255, 255, 255, 0.25);
+      color: #FFFFFF;
+    }
+
+    html[data-theme="dark"] .soft-filter-btn.active .filter-count {
+      background: rgba(255, 255, 255, 0.3);
+      color: #FFFFFF;
+    }
+
+    /* 4 Graphs Responsive Grid */
+    .charts-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 22px;
+      margin-bottom: 28px;
+    }
+
+    @media (max-width: 1080px) {
+      .charts-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .chart-card {
+      position: relative;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      box-shadow: var(--shadow-sm);
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition);
+      min-width: 0;
     }
 
-    .recent-item {
+    .chart-card:hover {
+      border-color: #088395;
+      box-shadow: var(--shadow-md);
+      transform: translateY(-2px);
+    }
+
+    .chart-card-header {
       display: flex;
-      align-items: center;
       justify-content: space-between;
-      gap: 14px;
-      padding: 15px;
-      background: #F7FAFC;
-      border: 1px solid #EEF1F5;
-      border-radius: var(--radius-md);
-      transition: background var(--transition);
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 18px;
     }
 
-    .recent-item:hover {
+    .chart-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 1.1px;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: 6px;
+      color: #09637E;
       background: var(--primary-light);
     }
 
-    .recent-details {
-      min-width: 0;
+    html[data-theme="dark"] .chart-tag {
+      color: #7AB2B2;
+      background: #0E303D;
     }
 
-    .recent-category {
-      margin-bottom: 5px;
+    .chart-card-header h2 {
+      font-size: 16px;
+      font-weight: 700;
       color: var(--navy);
+      margin-top: 6px;
+      margin-bottom: 3px;
+    }
+
+    .chart-card-header p {
       font-size: 12px;
-      font-weight: 600;
-      overflow-wrap: anywhere;
-    }
-
-    .recent-date {
-      color: var(--text-muted);
-      font-size: 10px;
-      line-height: 1.6;
-    }
-
-    .recent-score {
-      flex-shrink: 0;
-      color: var(--primary);
-      font-size: 13px;
-      font-weight: 700;
-      white-space: nowrap;
-    }
-
-    /* Prediction table */
-
-    .records-panel {
-      margin-bottom: 10px;
-    }
-
-    .records-panel .analytics-panel-header {
-      margin-bottom: 20px;
-    }
-
-    .analytics-table-wrapper {
-      width: 100%;
-      overflow-x: auto;
-    }
-
-    .analytics-table {
-      width: 100%;
-      border-collapse: collapse;
-      text-align: left;
-    }
-
-    .analytics-table th {
-      padding: 14px 16px;
       color: var(--text-secondary);
-      background: #F8FAFC;
-      border-bottom: 1px solid var(--border);
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: 0.4px;
-      text-transform: uppercase;
-      white-space: nowrap;
+      line-height: 1.5;
     }
 
-    .analytics-table td {
-      padding: 15px 16px;
-      color: var(--text-primary);
-      border-bottom: 1px solid #EEF1F5;
-      font-size: 12px;
-      white-space: nowrap;
+    .chart-container-wrap {
+      position: relative;
+      width: 100%;
+      height: 310px;
+      flex: 1;
     }
 
-    .analytics-table tbody tr {
-      transition: background var(--transition);
-    }
-
-    .analytics-table tbody tr:hover {
-      background: #F9FBFC;
-    }
-
-    .analytics-table tbody tr:last-child td {
-      border-bottom: none;
-    }
-
-    .score-cell {
-      color: var(--primary) !important;
-      font-weight: 700;
-    }
-
-    .category-badge {
-      display: inline-flex;
+    .chart-empty-state {
+      display: none;
+      position: absolute;
+      inset: 0;
+      flex-direction: column;
       align-items: center;
-      padding: 5px 9px;
-      color: var(--text-secondary);
-      background: #EEF1F5;
-      border-radius: 20px;
-      font-size: 10px;
-      font-weight: 600;
-    }
-
-    .category-badge.good {
-      color: var(--success);
-      background: var(--success-light);
-    }
-
-    .category-badge.average {
-      color: var(--warning);
-      background: var(--warning-light);
-    }
-
-    .category-badge.low {
-      color: var(--danger);
-      background: var(--danger-light);
-    }
-
-    .analytics-empty {
-      padding: 35px 18px;
-      color: var(--text-muted);
-      font-size: 12px;
-      line-height: 1.8;
+      justify-content: center;
       text-align: center;
+      color: var(--text-muted);
+      font-size: 13px;
+      gap: 10px;
+      padding: 20px;
+      background: var(--surface);
+      border-radius: var(--radius-md);
     }
 
+    .chart-empty-state i {
+      font-size: 32px;
+      color: #7AB2B2;
+      opacity: 0.7;
+    }
+
+    .chart-empty-state.visible {
+      display: flex;
+    }
+
+    /* Status alert */
     .analytics-message {
       display: none;
       margin-bottom: 20px;
-      padding: 14px 16px;
-      border: 1px solid var(--border);
+      padding: 13px 18px;
       border-radius: var(--radius-md);
-      font-size: 12px;
-      line-height: 1.7;
+      font-size: 13px;
+      font-weight: 500;
+      border: 1px solid var(--border);
     }
 
     .analytics-message.visible {
@@ -312,89 +345,32 @@
     }
 
     .analytics-message.error {
-      color: var(--danger);
       background: var(--danger-light);
+      color: var(--danger);
+      border-color: #F87171;
     }
 
-    /* Responsive layout */
-
-    @media (max-width: 1250px) {
-      .analytics-stats {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
+    .analytics-message.info {
+      background: var(--primary-light);
+      color: var(--primary);
+      border-color: var(--border);
     }
 
-    @media (max-width: 1000px) {
-      .analytics-panels {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    @media (max-width: 900px) {
-      .analytics-page {
-        padding: 24px 22px;
-      }
-    }
-
-    @media (max-width: 600px) {
-      .analytics-page {
-        padding: 20px 15px;
-      }
-
-      .analytics-heading {
-        align-items: flex-start;
-        flex-direction: column;
-        gap: 14px;
-        margin-bottom: 22px;
-      }
-
-      .analytics-heading h1 {
-        font-size: 27px;
-      }
-
-      .analytics-stats {
-        grid-template-columns: 1fr;
-        gap: 14px;
-        margin-bottom: 20px;
-      }
-
-      .analytics-panels {
-        gap: 14px;
-        margin-bottom: 20px;
-      }
-
-      .analytics-panel {
-        padding: 18px;
-      }
-
-      .recent-item {
-        padding: 12px;
-      }
-
-      .analytics-panel-header h2 {
-        font-size: 15px;
-      }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      .distribution-bar {
-        transition: none;
-      }
+    html[data-theme="dark"] .analytics-message.info {
+      background: #0E303D;
+      color: #B1DBE3;
+      border-color: #184755;
     }
   </style>
 </head>
 
 <body>
-
   <div class="app-layout">
 
-    <!-- SIDEBAR: SAME AS OVERVIEW DESIGN -->
-
-    <aside class="sidebar">
-
-      <a href="index.html" class="brand">
-        <div class="brand-logo">E</div>
-
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar" aria-label="Main navigation">
+      <a href="index.html" class="brand" aria-label="EduPredict Home">
+        <div class="brand-logo" aria-hidden="true">E</div>
         <div>
           <div class="brand-name">Edu<span>Predict</span></div>
           <div class="brand-caption">Student Analytics</div>
@@ -404,657 +380,1001 @@
       <div class="nav-label">Workspace</div>
 
       <nav class="nav-menu">
-
         <a href="index.html" class="nav-link">
-          <span class="nav-icon">⌂</span>
-          <span>Overview</span>
+          <span class="nav-icon" aria-hidden="true">⌂</span>
+          <span>Home</span>
         </a>
-
         <a href="predict.html" class="nav-link">
-          <span class="nav-icon">✳</span>
+          <span class="nav-icon" aria-hidden="true">✳</span>
           <span>Predict performance</span>
         </a>
-
         <a href="analytics.html" class="nav-link active" aria-current="page">
-          <span class="nav-icon">▥</span>
-          <span>Analytics</span>
+          <span class="nav-icon" aria-hidden="true">▥</span>
+          <span>Analytics/Dashboard</span>
         </a>
-
         <a href="history.html" class="nav-link">
-          <span class="nav-icon">◷</span>
+          <span class="nav-icon" aria-hidden="true">◷</span>
           <span>Prediction history</span>
         </a>
-
       </nav>
-
-      <div class="sidebar-bottom">
-
-        <div class="sidebar-note">
-          <strong>Evidence-led insights</strong>
-
-          <p>
-            Review model-generated predictions and performance
-            patterns. Predictions are estimates, not guarantees.
-          </p>
-        </div>
-
-        <p class="small text-muted" style="margin-top:16px; padding:0 10px;">
-          EDUPREDICT 2026 · STUDENT PROJECT
-        </p>
-
-      </div>
-
     </aside>
 
-    <!-- MAIN CONTENT -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
+    <!-- MAIN CONTENT -->
     <main class="main-content">
 
       <!-- TOPBAR -->
-
       <header class="topbar">
-
         <div class="topbar-left">
+          <button class="icon-button mobile-menu-button" id="menuToggle" type="button" aria-label="Open navigation"
+            aria-expanded="false">☰</button>
           <div class="breadcrumb">
-            Workspace / <strong>Analytics</strong>
+            Workspace <span aria-hidden="true">/</span> <strong>Analytics/Dashboard</strong>
           </div>
         </div>
 
         <div class="topbar-right">
+          <!-- Dark / Light Mode Switcher -->
+          <button class="theme-switch" id="themeSwitch" type="button" aria-label="Toggle dark / light mode"
+            title="Toggle dark / light mode">
+            <span class="knob"><i class="fa-solid fa-moon"></i></span>
+          </button>
           <div class="status-indicator">
             <span class="status-dot"></span>
-            ML workspace
+            ML Analytics Engine Active
           </div>
         </div>
-
       </header>
 
       <div class="analytics-page">
 
         <!-- PAGE HEADING -->
-
-        <section class="analytics-heading">
-
+        <section class="analytics-heading animate-in">
           <div>
-            <h1>Performance Analytics</h1>
-
+            <div class="section-kicker" style="font-size:11px; font-weight:800; letter-spacing:1px; color:#088395; text-transform:uppercase; margin-bottom:4px;">
+              Predictive Intelligence &amp; Cohorts
+            </div>
+            <h1>Analytics/Dashboard</h1>
             <p>
-              Explore prediction results and student
-              performance patterns.
+              Interactive predictive distributions, study factor correlations, multivariate radar benchmarking, and exam score targets computed from live backend records.
             </p>
           </div>
 
-          <button class="btn btn-secondary" id="refreshAnalytics" type="button">
-            ↻ Refresh analytics
+          <button class="btn btn-secondary" id="refreshAnalyticsBtn" type="button">
+            <i class="fa-solid fa-arrows-rotate"></i> Refresh Data
           </button>
-
         </section>
 
-        <!-- API STATUS MESSAGE -->
+        <!-- STATUS MESSAGE -->
+        <div id="analyticsMessage" class="analytics-message" role="status" aria-live="polite"></div>
 
-        <div id="analyticsMessage" class="analytics-message" role="status" aria-live="polite">
-        </div>
-
-        <!-- STATISTICS -->
-
-        <section class="analytics-stats">
-
-          <article class="card stat-card analytics-stat">
-
-            <div class="stat-label">Total predictions</div>
-
-            <div class="stat-value" id="totalPredictions">0</div>
-
-            <div class="stat-description">
-              Saved prediction records
+        <!-- SOFT FILTERS BAR (Based on backend data) -->
+        <section class="filter-section animate-in" aria-label="Cohort Filters">
+          <div class="filter-header">
+            <div class="filter-title">
+              <i class="fa-solid fa-filter"></i>
+              <span>Cohort Filter Controls</span>
             </div>
-
-          </article>
-
-          <article class="card stat-card analytics-stat">
-
-            <div class="stat-label">Average predicted score</div>
-
-            <div class="stat-value" id="averageScore">—</div>
-
-            <div class="stat-description">
-              Average of valid saved scores
+            <div class="filter-status-chip" id="filterStatusChip">
+              <i class="fa-solid fa-circle-info"></i>
+              <span id="filterStatusText">Showing all predictions</span>
             </div>
-
-          </article>
-
-          <article class="card stat-card analytics-stat">
-
-            <div class="stat-label">Highest predicted score</div>
-
-            <div class="stat-value" id="highestScore">—</div>
-
-            <div class="stat-description">
-              Highest score in prediction history
-            </div>
-
-          </article>
-
-          <article class="card stat-card analytics-stat">
-
-            <div class="stat-label">Latest predicted score</div>
-
-            <div class="stat-value" id="latestScore">—</div>
-
-            <div class="stat-description">
-              Most recent saved prediction
-            </div>
-
-          </article>
-
-        </section>
-
-        <!-- DISTRIBUTION AND RECENT PREDICTIONS -->
-
-        <section class="analytics-panels">
-
-          <article class="analytics-panel">
-
-            <div class="analytics-panel-header">
-              <h2>Performance distribution</h2>
-            </div>
-
-            <div class="distribution-list" id="performanceDistribution">
-
-              <div class="analytics-empty">
-                Loading performance data...
-              </div>
-
-            </div>
-
-          </article>
-
-          <article class="analytics-panel">
-
-            <div class="analytics-panel-header">
-
-              <h2>Recent predictions</h2>
-
-              <span class="badge badge-neutral">
-                Latest 5
-              </span>
-
-            </div>
-
-            <div class="recent-list" id="recentPredictions">
-
-              <div class="analytics-empty">
-                Loading recent predictions...
-              </div>
-
-            </div>
-
-          </article>
-
-        </section>
-
-        <!-- PREDICTION RECORDS -->
-
-        <section class="analytics-panel records-panel">
-
-          <div class="analytics-panel-header">
-
-            <h2>Prediction records</h2>
-
-            <span class="small text-muted" id="recordCount">
-              0 records
-            </span>
-
           </div>
 
-          <div class="analytics-table-wrapper">
+          <div class="filter-pills" id="filterPillsContainer" role="radiogroup" aria-label="Student Cohort Filters">
+            <!-- Filter 1: All -->
+            <button class="soft-filter-btn active" data-filter="all" type="button" role="radio" aria-checked="true">
+              <span class="soft-icon"><i class="fa-solid fa-layer-group"></i></span>
+              <span>All Predictions</span>
+              <span class="filter-count" id="countAll">0</span>
+            </button>
 
-            <table class="analytics-table">
+            <!-- Filter 2: High Performers (>= 70%) -->
+            <button class="soft-filter-btn" data-filter="high" type="button" role="radio" aria-checked="false">
+              <span class="soft-icon"><i class="fa-solid fa-trophy"></i></span>
+              <span>High Achievers (≥70%)</span>
+              <span class="filter-count" id="countHigh">0</span>
+            </button>
 
-              <thead>
-                <tr>
-                  <th>Date &amp; Time</th>
-                  <th>Predicted Score</th>
-                  <th>Performance Category</th>
-                  <th>Model</th>
-                </tr>
-              </thead>
+            <!-- Filter 3: Average Band (50 - 69%) -->
+            <button class="soft-filter-btn" data-filter="average" type="button" role="radio" aria-checked="false">
+              <span class="soft-icon"><i class="fa-solid fa-chart-line"></i></span>
+              <span>Core Performers (50–69%)</span>
+              <span class="filter-count" id="countAverage">0</span>
+            </button>
 
-              <tbody id="analyticsTableBody">
+            <!-- Filter 4: Needs Support (< 50%) -->
+            <button class="soft-filter-btn" data-filter="low" type="button" role="radio" aria-checked="false">
+              <span class="soft-icon"><i class="fa-solid fa-triangle-exclamation"></i></span>
+              <span>Needs Support (&lt;50%)</span>
+              <span class="filter-count" id="countLow">0</span>
+            </button>
 
-                <tr>
-                  <td colspan="4" class="analytics-empty">
-                    Loading prediction records...
-                  </td>
-                </tr>
+            <!-- Filter 5: Study Hours (>= 8 hrs) -->
+            <button class="soft-filter-btn" data-filter="study" type="button" role="radio" aria-checked="false">
+              <span class="soft-icon"><i class="fa-solid fa-book-open-reader"></i></span>
+              <span>Dedicated Study (≥8 hrs)</span>
+              <span class="filter-count" id="countStudy">0</span>
+            </button>
 
-              </tbody>
-
-            </table>
-
+            <!-- Filter 6: Attendance (>= 80%) -->
+            <button class="soft-filter-btn" data-filter="attendance" type="button" role="radio" aria-checked="false">
+              <span class="soft-icon"><i class="fa-solid fa-user-check"></i></span>
+              <span>High Attendance (≥80%)</span>
+              <span class="filter-count" id="countAttendance">0</span>
+            </button>
           </div>
+        </section>
+
+        <!-- 4 USEFUL, CRAZY & PROFESSIONAL GRAPHS -->
+        <section class="charts-grid animate-in" aria-label="Performance Visualizations">
+
+          <!-- GRAPH 1: TIER BREAKDOWN (Doughnut Chart) -->
+          <article class="chart-card">
+            <div class="chart-card-header">
+              <div>
+                <span class="chart-tag">Distribution</span>
+                <h2>Performance Tier Breakdown</h2>
+                <p>Proportion of cohort categorized across standard evaluation tiers.</p>
+              </div>
+              <span class="badge badge-neutral" id="distributionTotalBadge">0 records</span>
+            </div>
+            <div class="chart-container-wrap">
+              <canvas id="chartDistribution"></canvas>
+              <div class="chart-empty-state" id="emptyDistribution">
+                <i class="fa-solid fa-chart-pie"></i>
+                <span>No predictions found for this filter criteria</span>
+              </div>
+            </div>
+          </article>
+
+          <!-- GRAPH 2: STUDY & ATTENDANCE VS SCORE (Spline Area Chart) -->
+          <article class="chart-card">
+            <div class="chart-card-header">
+              <div>
+                <span class="chart-tag">Factor Correlation</span>
+                <h2>Study Hours &amp; Attendance vs. Predicted Score</h2>
+                <p>Direct positive correlation between learning habits and model forecasts.</p>
+              </div>
+              <span class="badge badge-neutral"><i class="fa-solid fa-arrow-trend-up"></i> Dual Axis</span>
+            </div>
+            <div class="chart-container-wrap">
+              <canvas id="chartCorrelation"></canvas>
+              <div class="chart-empty-state" id="emptyCorrelation">
+                <i class="fa-solid fa-chart-line"></i>
+                <span>No records available for correlation analysis</span>
+              </div>
+            </div>
+          </article>
+
+          <!-- GRAPH 3: MULTIVARIATE RADAR (Radar Chart) -->
+          <article class="chart-card">
+            <div class="chart-card-header">
+              <div>
+                <span class="chart-tag">Multivariate Profile</span>
+                <h2>Cohort Academic Strength Radar</h2>
+                <p>Holistic 6-dimension evaluation comparing cohort against top benchmark.</p>
+              </div>
+              <span class="badge badge-neutral"><i class="fa-solid fa-bullseye"></i> 6 Dimensions</span>
+            </div>
+            <div class="chart-container-wrap">
+              <canvas id="chartRadar"></canvas>
+              <div class="chart-empty-state" id="emptyRadar">
+                <i class="fa-solid fa-compass-drafting"></i>
+                <span>No attribute profile data available</span>
+              </div>
+            </div>
+          </article>
+
+          <!-- GRAPH 4: BENCHMARK BAR (Bar Chart with 60% Passing Line) -->
+          <article class="chart-card">
+            <div class="chart-card-header">
+              <div>
+                <span class="chart-tag">Benchmark Analysis</span>
+                <h2>Predictions vs. 60% Passing Benchmark</h2>
+                <p>Evaluation against the standard 60% passing mark with pass/at-risk indicators.</p>
+              </div>
+              <span class="badge badge-neutral" id="passingRateBadge">—</span>
+            </div>
+            <div class="chart-container-wrap">
+              <canvas id="chartBenchmark"></canvas>
+              <div class="chart-empty-state" id="emptyBenchmark">
+                <i class="fa-solid fa-chart-simple"></i>
+                <span>No score history available for benchmark tracking</span>
+              </div>
+            </div>
+          </article>
 
         </section>
 
       </div>
 
+      <footer class="page-footer">
+        <span>© 2026 EduPredict · Predictive Analytics for Education</span>
+        <span>Color Palette: #09637E · #088395 · #7AB2B2 · #EBF4F6</span>
+      </footer>
     </main>
-
   </div>
 
-  <!-- EXISTING PROJECT SCRIPTS -->
-
-  <script src="js/api.js"></script>
-  <script src="js/app.js"></script>
-
+  <!-- APPLICATION LOGIC & CHARTS SCRIPT -->
+  <script src="js/auth.js"></script>
   <script>
     "use strict";
 
     const API_BASE_URL = "http://127.0.0.1:5000";
 
-    let predictionHistory = [];
+    // Application State
+    let allRecords = [];
+    let currentFilter = "all";
 
-    /* Safely render values */
+    // Chart.js Instances
+    let chartDistribution = null;
+    let chartCorrelation = null;
+    let chartRadar = null;
+    let chartBenchmark = null;
 
-    function escapeHTML(value) {
-      return String(value ?? "").replace(/[&<>"']/g, character => ({
-        "&": "&amp;",
-        "<": "&lt;",
-        ">": "&gt;",
-        '"': "&quot;",
-        "'": "&#39;"
-      })[character]);
+    // Palette Colors
+    const PALETTE = {
+      primary: "#09637E",       // Deep teal blue
+      ocean: "#088395",         // Ocean teal
+      softTeal: "#7AB2B2",      // Soft muted teal
+      ice: "#EBF4F6",           // Pale ice blue
+      warning: "#F59E0B",       // Warm amber
+      danger: "#F87171",        // Soft alert coral
+      darkBg: "#09242E",
+      darkCard: "#071F27"
+    };
+
+    // Helper: Determine if dark theme is active
+    function isDarkTheme() {
+      return (document.documentElement.getAttribute("data-theme") || "light") === "dark";
     }
 
-    /* Score helpers */
+    // Helper: Get Theme-Appropriate Chart Colors
+    function getThemeColors() {
+      const dark = isDarkTheme();
+      return {
+        text: dark ? "#EBF4F6" : "#072530",
+        secondary: dark ? "#B1DBE3" : "#09637E",
+        muted: dark ? "#7AB2B2" : "#4B7885",
+        grid: dark ? "rgba(122, 178, 178, 0.12)" : "rgba(9, 99, 126, 0.08)",
+        border: dark ? "#184755" : "#C2DFE5",
+        surface: dark ? "#09242E" : "#FFFFFF"
+      };
+    }
 
-    function getScore(record) {
-      if (
-        record.predicted_score === null ||
-        record.predicted_score === undefined ||
-        record.predicted_score === ""
-      ) {
+    // Helper: Safe numeric score extraction
+    function getNumericScore(record) {
+      if (!record || record.predicted_score === null || record.predicted_score === undefined) {
         return null;
       }
-
-      const score = Number(record.predicted_score);
-
-      return Number.isFinite(score) ? score : null;
+      const num = Number(record.predicted_score);
+      return Number.isFinite(num) ? num : null;
     }
 
-    function formatScore(score) {
-      return score === null
-        ? "—"
-        : score.toFixed(2) + " / 100";
-    }
+    // Filter Logic
+    function matchesFilter(record, filter) {
+      const score = getNumericScore(record);
+      const student = record.student_data || {};
 
-    /* Category helpers */
-
-    function getCategory(record) {
-      return record.performance_category || "Unknown";
-    }
-
-    function getCategoryType(category) {
-      const value = String(category).toLowerCase();
-
-      if (
-        value.includes("excellent") ||
-        value.includes("good") ||
-        value.includes("high")
-      ) {
-        return "good";
-      }
-
-      if (
-        value.includes("average") ||
-        value.includes("satisfactory") ||
-        value.includes("moderate")
-      ) {
-        return "average";
-      }
-
-      if (
-        value.includes("needs improvement") ||
-        value.includes("poor") ||
-        value.includes("low")
-      ) {
-        return "low";
-      }
-
-      return "";
-    }
-
-    /* Date helper */
-
-    function getRecordDate(record) {
-      const rawDate =
-        record.created_at ||
-        record.date ||
-        record.timestamp;
-
-      if (!rawDate) {
-        return "Date unavailable";
-      }
-
-      const date = new Date(rawDate);
-
-      if (Number.isNaN(date.getTime())) {
-        return String(rawDate);
-      }
-
-      return date.toLocaleString();
-    }
-
-    /* Status message */
-
-    function showAnalyticsError(message) {
-      const box = document.getElementById("analyticsMessage");
-
-      box.textContent = message;
-      box.className = "analytics-message visible error";
-    }
-
-    function hideAnalyticsMessage() {
-      const box = document.getElementById("analyticsMessage");
-
-      box.textContent = "";
-      box.className = "analytics-message";
-    }
-
-    /* Load prediction history from Flask + SQLite */
-
-    async function loadAnalytics() {
-      const refreshButton =
-        document.getElementById("refreshAnalytics");
-
-      refreshButton.disabled = true;
-      refreshButton.textContent = "Loading...";
-
-      hideAnalyticsMessage();
-
-      try {
-        const response = await fetch(`${API_BASE_URL}/history`, {
-          method: "GET",
-          headers: {
-            "Accept": "application/json"
-          }
-        });
-
-        if (!response.ok) {
-          throw new Error(`Server returned HTTP ${response.status}`);
-        }
-
-        const result = await response.json();
-
-        if (!Array.isArray(result.history)) {
-          throw new Error("The API returned an invalid history response.");
-        }
-
-        predictionHistory = result.history;
-
-        /* Newest records first */
-
-        predictionHistory.sort((a, b) => {
-          const dateA = new Date(
-            a.created_at || a.date || 0
-          ).getTime();
-
-          const dateB = new Date(
-            b.created_at || b.date || 0
-          ).getTime();
-
-          return dateB - dateA;
-        });
-
-        renderStatistics(predictionHistory);
-        renderDistribution(predictionHistory);
-        renderRecentPredictions(predictionHistory);
-        renderPredictionTable(predictionHistory);
-
-      } catch (error) {
-        console.error("Analytics loading error:", error);
-
-        document.getElementById("totalPredictions").textContent = "—";
-        document.getElementById("averageScore").textContent = "—";
-        document.getElementById("highestScore").textContent = "—";
-        document.getElementById("latestScore").textContent = "—";
-        document.getElementById("recordCount").textContent = "Unavailable";
-
-        document.getElementById("performanceDistribution").innerHTML = `
-          <div class="analytics-empty">
-            Could not load analytics.<br>
-            Please check whether the Flask backend is running.
-          </div>
-        `;
-
-        document.getElementById("recentPredictions").innerHTML = `
-          <div class="analytics-empty">
-            Unable to connect to the prediction database.
-          </div>
-        `;
-
-        document.getElementById("analyticsTableBody").innerHTML = `
-          <tr>
-            <td colspan="4" class="analytics-empty">
-              Could not load prediction records. Try refreshing.
-            </td>
-          </tr>
-        `;
-
-        showAnalyticsError(
-          "Unable to connect to the history API. Make sure Flask is running at http://127.0.0.1:5000."
-        );
-
-      } finally {
-        refreshButton.disabled = false;
-        refreshButton.textContent = "↻ Refresh analytics";
+      switch (filter) {
+        case "high":
+          return score !== null && score >= 70;
+        case "average":
+          return score !== null && score >= 50 && score < 70;
+        case "low":
+          return score !== null && score < 50;
+        case "study":
+          return Number(student.Hours_Studied || 0) >= 8;
+        case "attendance":
+          return Number(student.Attendance || 0) >= 80;
+        case "all":
+        default:
+          return true;
       }
     }
 
-    /* Statistics */
+    // Filter counts update
+    function updateFilterCounts() {
+      const counts = {
+        all: allRecords.length,
+        high: allRecords.filter(r => matchesFilter(r, "high")).length,
+        average: allRecords.filter(r => matchesFilter(r, "average")).length,
+        low: allRecords.filter(r => matchesFilter(r, "low")).length,
+        study: allRecords.filter(r => matchesFilter(r, "study")).length,
+        attendance: allRecords.filter(r => matchesFilter(r, "attendance")).length
+      };
 
-    function renderStatistics(history) {
-      const scores = history
-        .map(getScore)
-        .filter(score => score !== null);
-
-      const average = scores.length
-        ? scores.reduce((sum, score) => sum + score, 0) / scores.length
-        : null;
-
-      const highest = scores.length
-        ? Math.max(...scores)
-        : null;
-
-      const latest = history.length
-        ? getScore(history[0])
-        : null;
-
-      document.getElementById("totalPredictions").textContent =
-        history.length;
-
-      document.getElementById("averageScore").textContent =
-        formatScore(average);
-
-      document.getElementById("highestScore").textContent =
-        formatScore(highest);
-
-      document.getElementById("latestScore").textContent =
-        formatScore(latest);
+      document.getElementById("countAll").textContent = counts.all;
+      document.getElementById("countHigh").textContent = counts.high;
+      document.getElementById("countAverage").textContent = counts.average;
+      document.getElementById("countLow").textContent = counts.low;
+      document.getElementById("countStudy").textContent = counts.study;
+      document.getElementById("countAttendance").textContent = counts.attendance;
     }
 
-    /* Performance distribution */
+    // Apply Filter and re-render
+    function setFilter(filter) {
+      currentFilter = filter;
 
-    function renderDistribution(history) {
-      const container =
-        document.getElementById("performanceDistribution");
-
-      if (!history.length) {
-        container.innerHTML = `
-          <div class="analytics-empty">
-            No predictions available yet.<br>
-            Make a prediction to see the distribution.
-          </div>
-        `;
-
-        return;
-      }
-
-      const counts = {};
-
-      history.forEach(record => {
-        const category = getCategory(record);
-
-        counts[category] = (counts[category] || 0) + 1;
+      // Update button active classes
+      document.querySelectorAll(".soft-filter-btn").forEach(btn => {
+        const isMatch = btn.getAttribute("data-filter") === filter;
+        btn.classList.toggle("active", isMatch);
+        btn.setAttribute("aria-checked", isMatch ? "true" : "false");
       });
 
-      container.innerHTML = Object.entries(counts)
-        .sort((a, b) => b[1] - a[1])
-        .map(([category, count]) => {
-          const percentage = count / history.length * 100;
-          const categoryType = getCategoryType(category);
+      // Filter data
+      const filtered = allRecords.filter(r => matchesFilter(r, filter));
 
-          return `
-            <div class="distribution-item">
+      // Update Status Chip
+      const statusText = document.getElementById("filterStatusText");
+      if (statusText) {
+        if (filter === "all") {
+          statusText.textContent = `Showing all ${filtered.length} predictions`;
+        } else {
+          const btn = document.querySelector(`.soft-filter-btn[data-filter="${filter}"] span:nth-child(2)`);
+          const label = btn ? btn.textContent : filter;
+          statusText.textContent = `Filtered: ${label} (${filtered.length} of ${allRecords.length})`;
+        }
+      }
 
-              <div class="distribution-info">
-
-                <span class="distribution-name">
-                  ${escapeHTML(category)}
-                </span>
-
-                <span class="distribution-count">
-                  ${count} · ${percentage.toFixed(1)}%
-                </span>
-
-              </div>
-
-              <div class="distribution-track">
-
-                <div
-                  class="distribution-bar ${categoryType}"
-                  style="width:${percentage}%">
-                </div>
-
-              </div>
-
-            </div>
-          `;
-        })
-        .join("");
+      // Re-render the 4 charts
+      renderAllCharts(filtered);
     }
 
-    /* Recent five predictions */
+    // =========================================================
+    // CHART 1: PERFORMANCE TIER DISTRIBUTION (Doughnut Chart)
+    // =========================================================
+    function renderDistributionChart(records) {
+      const ctx = document.getElementById("chartDistribution");
+      const empty = document.getElementById("emptyDistribution");
+      const badge = document.getElementById("distributionTotalBadge");
 
-    function renderRecentPredictions(history) {
-      const container =
-        document.getElementById("recentPredictions");
+      if (chartDistribution) {
+        chartDistribution.destroy();
+        chartDistribution = null;
+      }
 
-      if (!history.length) {
-        container.innerHTML = `
-          <div class="analytics-empty">
-            No saved predictions yet.
-          </div>
-        `;
-
+      if (!records || records.length === 0) {
+        if (empty) empty.classList.add("visible");
+        if (badge) badge.textContent = "0 records";
         return;
       }
 
-      container.innerHTML = history
-        .slice(0, 5)
-        .map(record => {
-          const score = getScore(record);
+      if (empty) empty.classList.remove("visible");
+      if (badge) badge.textContent = `${records.length} ${records.length === 1 ? 'record' : 'records'}`;
 
-          return `
-            <div class="recent-item">
+      const tc = getThemeColors();
 
-              <div class="recent-details">
+      // Aggregate counts by category
+      let excellent = 0, good = 0, average = 0, needsSupport = 0;
 
-                <div class="recent-category">
-                  ${escapeHTML(getCategory(record))}
-                </div>
+      records.forEach(r => {
+        const score = getNumericScore(r);
+        const cat = String(r.performance_category || "").toLowerCase();
+        if (score !== null) {
+          if (score >= 75 || cat.includes("excellent")) excellent++;
+          else if (score >= 60 || cat.includes("good")) good++;
+          else if (score >= 45 || cat.includes("average")) average++;
+          else needsSupport++;
+        }
+      });
 
-                <div class="recent-date">
-                  ${escapeHTML(getRecordDate(record))}
-                </div>
-
-              </div>
-
-              <div class="recent-score">
-                ${formatScore(score)}
-              </div>
-
-            </div>
-          `;
-        })
-        .join("");
+      chartDistribution = new Chart(ctx, {
+        type: "doughnut",
+        data: {
+          labels: [
+            "Excellent (≥75%)",
+            "Good (60–74%)",
+            "Average (45–59%)",
+            "Needs Support (<45%)"
+          ],
+          datasets: [{
+            data: [excellent, good, average, needsSupport],
+            backgroundColor: [
+              "#09637E",
+              "#088395",
+              "#7AB2B2",
+              "#F87171"
+            ],
+            hoverBackgroundColor: [
+              "#074E63",
+              "#066B7A",
+              "#659D9D",
+              "#DC2626"
+            ],
+            borderWidth: 2,
+            borderColor: tc.surface,
+            hoverOffset: 8
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          cutout: "68%",
+          plugins: {
+            legend: {
+              position: "bottom",
+              labels: {
+                usePointStyle: true,
+                pointStyle: "circle",
+                padding: 16,
+                color: tc.text,
+                font: {
+                  family: "Inter",
+                  size: 11,
+                  weight: 600
+                }
+              }
+            },
+            tooltip: {
+              backgroundColor: tc.surface,
+              titleColor: tc.text,
+              bodyColor: tc.secondary,
+              borderColor: tc.border,
+              borderWidth: 1,
+              padding: 12,
+              boxPadding: 6,
+              callbacks: {
+                label: function (context) {
+                  const val = context.raw || 0;
+                  const pct = records.length ? ((val / records.length) * 100).toFixed(1) : 0;
+                  return ` ${context.label}: ${val} (${pct}%)`;
+                }
+              }
+            }
+          }
+        }
+      });
     }
 
-    /* Complete prediction records table */
+    // =========================================================
+    // CHART 2: STUDY HOURS & ATTENDANCE VS SCORE (Spline Area)
+    // =========================================================
+    function renderCorrelationChart(records) {
+      const ctx = document.getElementById("chartCorrelation");
+      const empty = document.getElementById("emptyCorrelation");
 
-    function renderPredictionTable(history) {
-      const tbody =
-        document.getElementById("analyticsTableBody");
+      if (chartCorrelation) {
+        chartCorrelation.destroy();
+        chartCorrelation = null;
+      }
 
-      document.getElementById("recordCount").textContent =
-        history.length +
-        (history.length === 1 ? " record" : " records");
-
-      if (!history.length) {
-        tbody.innerHTML = `
-          <tr>
-            <td colspan="4" class="analytics-empty">
-              No prediction records available.
-            </td>
-          </tr>
-        `;
-
+      if (!records || records.length === 0) {
+        if (empty) empty.classList.add("visible");
         return;
       }
 
-      tbody.innerHTML = history.map(record => {
-        const category = getCategory(record);
-        const categoryType = getCategoryType(category);
-        const score = getScore(record);
+      if (empty) empty.classList.remove("visible");
 
-        return `
-          <tr>
+      const tc = getThemeColors();
 
-            <td>
-              ${escapeHTML(getRecordDate(record))}
-            </td>
+      // Sort chronological by ID or created_at
+      const sorted = [...records].reverse();
 
-            <td class="score-cell">
-              ${formatScore(score)}
-            </td>
+      const labels = sorted.map((r, i) => `Student #${r.id || (i + 1)}`);
+      const scores = sorted.map(r => getNumericScore(r) || 0);
+      const attendances = sorted.map(r => Number((r.student_data && r.student_data.Attendance) || 0));
+      const studyHours = sorted.map(r => Number((r.student_data && r.student_data.Hours_Studied) || 0));
 
-            <td>
-              <span class="category-badge ${categoryType}">
-                ${escapeHTML(category)}
-              </span>
-            </td>
-
-            <td>
-              ${escapeHTML(record.model_used || "Unknown")}
-            </td>
-
-          </tr>
-        `;
-      }).join("");
+      chartCorrelation = new Chart(ctx, {
+        type: "line",
+        data: {
+          labels,
+          datasets: [
+            {
+              label: "Predicted Score (%)",
+              data: scores,
+              borderColor: "#088395",
+              backgroundColor: isDarkTheme() ? "rgba(8, 131, 149, 0.28)" : "rgba(8, 131, 149, 0.12)",
+              fill: true,
+              tension: 0.4,
+              borderWidth: 3,
+              pointBackgroundColor: "#088395",
+              pointBorderColor: tc.surface,
+              pointBorderWidth: 2,
+              pointRadius: 5,
+              pointHoverRadius: 8,
+              yAxisID: "y"
+            },
+            {
+              label: "Attendance Rate (%)",
+              data: attendances,
+              borderColor: "#7AB2B2",
+              backgroundColor: "transparent",
+              borderDash: [5, 5],
+              tension: 0.35,
+              borderWidth: 2,
+              pointBackgroundColor: "#7AB2B2",
+              pointRadius: 4,
+              pointHoverRadius: 6,
+              yAxisID: "y"
+            },
+            {
+              label: "Study Hours (hrs)",
+              data: studyHours,
+              borderColor: "#09637E",
+              backgroundColor: "transparent",
+              borderDash: [2, 2],
+              tension: 0.3,
+              borderWidth: 2,
+              pointBackgroundColor: "#09637E",
+              pointRadius: 4,
+              pointHoverRadius: 6,
+              yAxisID: "y1"
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: {
+            mode: "index",
+            intersect: false
+          },
+          plugins: {
+            legend: {
+              position: "top",
+              labels: {
+                usePointStyle: true,
+                pointStyle: "circle",
+                padding: 14,
+                color: tc.text,
+                font: { family: "Inter", size: 11, weight: 600 }
+              }
+            },
+            tooltip: {
+              backgroundColor: tc.surface,
+              titleColor: tc.text,
+              bodyColor: tc.secondary,
+              borderColor: tc.border,
+              borderWidth: 1,
+              padding: 12
+            }
+          },
+          scales: {
+            x: {
+              grid: { display: false },
+              ticks: { color: tc.muted, font: { family: "Inter", size: 10 } }
+            },
+            y: {
+              type: "linear",
+              position: "left",
+              min: 0,
+              max: 100,
+              grid: { color: tc.grid },
+              ticks: {
+                color: tc.muted,
+                font: { family: "Inter", size: 10 },
+                callback: v => v + "%"
+              }
+            },
+            y1: {
+              type: "linear",
+              position: "right",
+              min: 0,
+              max: 25,
+              grid: { display: false },
+              ticks: {
+                color: tc.muted,
+                font: { family: "Inter", size: 10 },
+                callback: v => v + "h"
+              }
+            }
+          }
+        }
+      });
     }
 
-    /* Refresh analytics */
+    // =========================================================
+    // CHART 3: MULTIVARIATE ACADEMIC RADAR
+    // =========================================================
+    function renderRadarChart(records) {
+      const ctx = document.getElementById("chartRadar");
+      const empty = document.getElementById("emptyRadar");
 
-    document
-      .getElementById("refreshAnalytics")
-      .addEventListener("click", loadAnalytics);
+      if (chartRadar) {
+        chartRadar.destroy();
+        chartRadar = null;
+      }
 
-    /* Initial load */
+      if (!records || records.length === 0) {
+        if (empty) empty.classList.add("visible");
+        return;
+      }
 
-    loadAnalytics();
+      if (empty) empty.classList.remove("visible");
 
+      const tc = getThemeColors();
+
+      // Compute normalized averages for the 6 factors (scaled 0 - 100)
+      let totStudy = 0, totAtt = 0, totPrev = 0, totSleep = 0, totTutor = 0, totActivity = 0;
+
+      records.forEach(r => {
+        const d = r.student_data || {};
+        // Hours_Studied: typical max 20 hours -> scale to 100
+        totStudy += Math.min(100, (Number(d.Hours_Studied || 0) / 15) * 100);
+        totAtt += Number(d.Attendance || 0);
+        totPrev += Number(d.Previous_Scores || 0);
+        // Sleep_Hours: typical 8 hours = 100%
+        totSleep += Math.min(100, (Number(d.Sleep_Hours || 0) / 8) * 100);
+        // Tutoring_Sessions: typical 3 sessions = 100%
+        totTutor += Math.min(100, (Number(d.Tutoring_Sessions || 0) / 3) * 100);
+        // Physical_Activity: typical 5 hours = 100%
+        totActivity += Math.min(100, (Number(d.Physical_Activity || 0) / 5) * 100);
+      });
+
+      const n = records.length;
+      const cohortAvg = [
+        Math.round(totStudy / n),
+        Math.round(totAtt / n),
+        Math.round(totPrev / n),
+        Math.round(totSleep / n),
+        Math.round(totTutor / n),
+        Math.round(totActivity / n)
+      ];
+
+      // Ideal benchmark target profile (75%+ achiever standard)
+      const benchmarkTarget = [80, 88, 85, 90, 70, 75];
+
+      chartRadar = new Chart(ctx, {
+        type: "radar",
+        data: {
+          labels: [
+            "Study Dedication",
+            "Attendance Rate",
+            "Previous Scores",
+            "Sleep Quality",
+            "Tutoring Sessions",
+            "Physical Activity"
+          ],
+          datasets: [
+            {
+              label: "Cohort Average",
+              data: cohortAvg,
+              backgroundColor: isDarkTheme() ? "rgba(8, 131, 149, 0.38)" : "rgba(8, 131, 149, 0.22)",
+              borderColor: "#088395",
+              pointBackgroundColor: "#088395",
+              pointBorderColor: tc.surface,
+              pointHoverBackgroundColor: "#FFFFFF",
+              pointRadius: 4,
+              borderWidth: 2.5
+            },
+            {
+              label: "High Achiever Standard",
+              data: benchmarkTarget,
+              backgroundColor: "rgba(122, 178, 178, 0.08)",
+              borderColor: "#7AB2B2",
+              borderDash: [4, 4],
+              pointBackgroundColor: "#7AB2B2",
+              pointRadius: 3,
+              borderWidth: 1.8
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: "top",
+              labels: {
+                usePointStyle: true,
+                pointStyle: "circle",
+                padding: 12,
+                color: tc.text,
+                font: { family: "Inter", size: 11, weight: 600 }
+              }
+            },
+            tooltip: {
+              backgroundColor: tc.surface,
+              titleColor: tc.text,
+              bodyColor: tc.secondary,
+              borderColor: tc.border,
+              borderWidth: 1,
+              callbacks: {
+                label: context => ` ${context.dataset.label}: ${context.raw}%`
+              }
+            }
+          },
+          scales: {
+            r: {
+              min: 0,
+              max: 100,
+              ticks: {
+                display: false,
+                stepSize: 25
+              },
+              grid: {
+                color: tc.grid
+              },
+              angleLines: {
+                color: tc.grid
+              },
+              pointLabels: {
+                color: tc.text,
+                font: {
+                  family: "Inter",
+                  size: 11,
+                  weight: 600
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    // =========================================================
+    // CHART 4: PREDICTIONS VS 60% BENCHMARK (Bar & Line Chart)
+    // =========================================================
+    function renderBenchmarkChart(records) {
+      const ctx = document.getElementById("chartBenchmark");
+      const empty = document.getElementById("emptyBenchmark");
+      const badge = document.getElementById("passingRateBadge");
+
+      if (chartBenchmark) {
+        chartBenchmark.destroy();
+        chartBenchmark = null;
+      }
+
+      if (!records || records.length === 0) {
+        if (empty) empty.classList.add("visible");
+        if (badge) badge.textContent = "—";
+        return;
+      }
+
+      if (empty) empty.classList.remove("visible");
+
+      const tc = getThemeColors();
+
+      const sorted = [...records].reverse();
+      const labels = sorted.map((r, i) => `Student #${r.id || (i + 1)}`);
+      const scores = sorted.map(r => getNumericScore(r) || 0);
+
+      // Compute passing rate
+      const passCount = scores.filter(s => s >= 60).length;
+      const passPct = ((passCount / scores.length) * 100).toFixed(0);
+      if (badge) {
+        badge.textContent = `${passPct}% Passing Rate (${passCount}/${scores.length})`;
+      }
+
+      // Dynamic bar colors: >=60% Ocean Teal, <60% Coral Alert
+      const barColors = scores.map(s => s >= 60 ? "#088395" : "#F87171");
+      const hoverColors = scores.map(s => s >= 60 ? "#074E63" : "#DC2626");
+
+      // Constant 60% Passing Benchmark Line
+      const benchmarkLine = scores.map(() => 60);
+
+      chartBenchmark = new Chart(ctx, {
+        type: "bar",
+        data: {
+          labels,
+          datasets: [
+            {
+              type: "line",
+              label: "Passing Standard (60%)",
+              data: benchmarkLine,
+              borderColor: "#F59E0B",
+              borderWidth: 2,
+              borderDash: [6, 4],
+              pointRadius: 0,
+              fill: false,
+              order: 1
+            },
+            {
+              type: "bar",
+              label: "Predicted Score (%)",
+              data: scores,
+              backgroundColor: barColors,
+              hoverBackgroundColor: hoverColors,
+              borderRadius: 6,
+              borderSkipped: false,
+              order: 2
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: "top",
+              labels: {
+                usePointStyle: true,
+                pointStyle: "circle",
+                padding: 14,
+                color: tc.text,
+                font: { family: "Inter", size: 11, weight: 600 }
+              }
+            },
+            tooltip: {
+              backgroundColor: tc.surface,
+              titleColor: tc.text,
+              bodyColor: tc.secondary,
+              borderColor: tc.border,
+              borderWidth: 1,
+              padding: 12,
+              callbacks: {
+                label: function (context) {
+                  if (context.dataset.type === "line") {
+                    return ` Passing Target: 60.0%`;
+                  }
+                  const score = context.raw;
+                  const diff = (score - 60).toFixed(1);
+                  const status = score >= 60 ? `Pass (+${diff}%)` : `At-Risk (${diff}%)`;
+                  return ` Score: ${score.toFixed(1)}% — ${status}`;
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              grid: { display: false },
+              ticks: { color: tc.muted, font: { family: "Inter", size: 10 } }
+            },
+            y: {
+              min: 0,
+              max: 100,
+              grid: { color: tc.grid },
+              ticks: {
+                color: tc.muted,
+                font: { family: "Inter", size: 10 },
+                callback: v => v + "%"
+              }
+            }
+          }
+        }
+      });
+    }
+
+    // Render all 4 graphs
+    function renderAllCharts(records) {
+      renderDistributionChart(records);
+      renderCorrelationChart(records);
+      renderRadarChart(records);
+      renderBenchmarkChart(records);
+    }
+
+    // Theme Switch Handler & Chart Color Synchronization
+    function updateChartsTheme() {
+      const tc = getThemeColors();
+
+      // Update Chart 1
+      if (chartDistribution) {
+        chartDistribution.options.plugins.legend.labels.color = tc.text;
+        chartDistribution.data.datasets[0].borderColor = tc.surface;
+        chartDistribution.update();
+      }
+
+      // Update Chart 2
+      if (chartCorrelation) {
+        chartCorrelation.options.plugins.legend.labels.color = tc.text;
+        chartCorrelation.options.scales.x.ticks.color = tc.muted;
+        chartCorrelation.options.scales.y.ticks.color = tc.muted;
+        chartCorrelation.options.scales.y.grid.color = tc.grid;
+        chartCorrelation.options.scales.y1.ticks.color = tc.muted;
+        chartCorrelation.data.datasets[0].pointBorderColor = tc.surface;
+        chartCorrelation.data.datasets[0].backgroundColor = isDarkTheme() ? "rgba(8, 131, 149, 0.28)" : "rgba(8, 131, 149, 0.12)";
+        chartCorrelation.update();
+      }
+
+      // Update Chart 3
+      if (chartRadar) {
+        chartRadar.options.plugins.legend.labels.color = tc.text;
+        chartRadar.options.scales.r.grid.color = tc.grid;
+        chartRadar.options.scales.r.angleLines.color = tc.grid;
+        chartRadar.options.scales.r.pointLabels.color = tc.text;
+        chartRadar.data.datasets[0].backgroundColor = isDarkTheme() ? "rgba(8, 131, 149, 0.38)" : "rgba(8, 131, 149, 0.22)";
+        chartRadar.data.datasets[0].pointBorderColor = tc.surface;
+        chartRadar.update();
+      }
+
+      // Update Chart 4
+      if (chartBenchmark) {
+        chartBenchmark.options.plugins.legend.labels.color = tc.text;
+        chartBenchmark.options.scales.x.ticks.color = tc.muted;
+        chartBenchmark.options.scales.y.ticks.color = tc.muted;
+        chartBenchmark.options.scales.y.grid.color = tc.grid;
+        chartBenchmark.update();
+      }
+    }
+
+    // Load data from Backend /history API
+    async function loadAnalyticsData() {
+      const msg = document.getElementById("analyticsMessage");
+      try {
+        const res = await fetch(`${API_BASE_URL}/history`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        allRecords = Array.isArray(data.history) ? data.history : [];
+
+        if (msg) msg.classList.remove("visible");
+
+        updateFilterCounts();
+        setFilter(currentFilter);
+      } catch (err) {
+        console.warn("Could not fetch /history from backend:", err);
+        if (msg) {
+          msg.textContent = "Unable to connect to live backend at 127.0.0.1:5000. Displaying empty states.";
+          msg.className = "analytics-message info visible";
+        }
+        allRecords = [];
+        updateFilterCounts();
+        setFilter(currentFilter);
+      }
+    }
+
+    // Initial setup on DOM ready
+    document.addEventListener("DOMContentLoaded", () => {
+      // Setup Theme Switcher
+      const switchBtn = document.getElementById("themeSwitch");
+      function updateSwitchIcon(theme) {
+        if (!switchBtn) return;
+        const icon = switchBtn.querySelector("i");
+        if (icon) {
+          icon.className = theme === "dark" ? "fa-solid fa-moon" : "fa-solid fa-sun";
+        }
+      }
+
+      const initialTheme = document.documentElement.getAttribute("data-theme") || "light";
+      updateSwitchIcon(initialTheme);
+
+      if (switchBtn) {
+        switchBtn.addEventListener("click", () => {
+          const cur = document.documentElement.getAttribute("data-theme") || "light";
+          const next = cur === "dark" ? "light" : "dark";
+          document.documentElement.setAttribute("data-theme", next);
+          localStorage.setItem("ep_theme", next);
+          updateSwitchIcon(next);
+          updateChartsTheme();
+        });
+      }
+
+      // Setup Filter Pills
+      document.querySelectorAll(".soft-filter-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const filter = btn.getAttribute("data-filter");
+          if (filter) setFilter(filter);
+        });
+      });
+
+      // Refresh Button
+      const refreshBtn = document.getElementById("refreshAnalyticsBtn");
+      if (refreshBtn) {
+        refreshBtn.addEventListener("click", () => {
+          refreshBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Refreshing...';
+          loadAnalyticsData().finally(() => {
+            setTimeout(() => {
+              refreshBtn.innerHTML = '<i class="fa-solid fa-arrows-rotate"></i> Refresh Data';
+            }, 400);
+          });
+        });
+      }
+
+      // Mobile Menu Toggle
+      const menuToggle = document.getElementById("menuToggle");
+      const sidebar = document.getElementById("sidebar");
+      const overlay = document.getElementById("sidebarOverlay");
+      if (menuToggle && sidebar) {
+        menuToggle.addEventListener("click", () => {
+          const isOpen = sidebar.classList.toggle("open");
+          if (overlay) overlay.classList.toggle("visible", isOpen);
+        });
+      }
+      if (overlay) {
+        overlay.addEventListener("click", () => {
+          if (sidebar) sidebar.classList.remove("open");
+          overlay.classList.remove("visible");
+        });
+      }
+
+      // Initial Fetch
+      loadAnalyticsData();
+    });
   </script>
-
 </body>
 
 </html>

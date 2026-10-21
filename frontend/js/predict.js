@@ -224,11 +224,69 @@
                 console.error("Could not save prediction history:", error);
             }
         }
+
+        // Refresh stats cards after a new prediction is saved
+        loadSummaryStats();
+    }
+
+    async function loadSummaryStats() {
+        const apiBase = (api && api.API_BASE_URL) || "http://127.0.0.1:5000";
+
+        try {
+            const [statusRes, featuresRes, historyRes] = await Promise.all([
+                fetch(`${apiBase}/`).catch(() => null),
+                fetch(`${apiBase}/features`).catch(() => null),
+                fetch(`${apiBase}/history`).catch(() => null)
+            ]);
+
+            if (featuresRes && featuresRes.ok) {
+                const featData = await featuresRes.json();
+                const features = Array.isArray(featData) ? featData : (featData.features || []);
+                const count = features.length || featData.total_features || 19;
+                const el = document.getElementById("featureCount");
+                if (el) el.textContent = count;
+            }
+
+            if (statusRes && statusRes.ok) {
+                const statusData = await statusRes.json();
+                const r2 = statusData.r2 || statusData.r2_score || (statusData.model_metrics && statusData.model_metrics.r2);
+                const el = document.getElementById("modelAccuracy");
+                if (el) el.textContent = r2 !== undefined ? (r2 * 100).toFixed(1) + "%" : "N/A";
+            } else {
+                const el = document.getElementById("modelAccuracy");
+                if (el && (el.textContent === "—" || el.textContent === "")) el.textContent = "N/A";
+            }
+
+            if (historyRes && historyRes.ok) {
+                const histData = await historyRes.json();
+                const records = Array.isArray(histData.history) ? histData.history : [];
+                const elTotal = document.getElementById("totalPredictions");
+                if (elTotal) elTotal.textContent = records.length.toLocaleString();
+
+                const scores = records
+                    .map(r => Number(r.predicted_score))
+                    .filter(s => Number.isFinite(s));
+                const elAvg = document.getElementById("averageScore");
+                if (elAvg) {
+                    if (scores.length > 0) {
+                        const avg = scores.reduce((sum, s) => sum + s, 0) / scores.length;
+                        elAvg.textContent = avg.toFixed(1);
+                    } else {
+                        elAvg.textContent = "—";
+                    }
+                }
+            }
+        } catch (error) {
+            console.warn("Could not load summary statistics:", error);
+        }
     }
 
     async function initialize() {
         // Populate dropdowns immediately, without waiting for the backend.
         populateDropdowns();
+
+        // Load summary cards from backend
+        loadSummaryStats();
 
         if (!api) {
             throw new Error("api.js is not loaded. Check predict.html script tags.");

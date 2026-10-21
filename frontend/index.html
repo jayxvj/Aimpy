@@ -4,368 +4,634 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>EduPredict | Dashboard</title>
+  <title>EduPredict — Predictive Analytics in Education</title>
+  <meta name="description"
+    content="A predictive analytics platform that predicts student exam performance from attendance, study habits, and academic factors using machine learning.">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-
-  <!-- Chart.js -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="css/auth.css">
 
   <style>
+    /* =========================================================
+       EduPredict — Predictive Analytics in Education
+       Color Palette: #09637E | #088395 | #7AB2B2 | #EBF4F6
+       High-contrast, fully visible typography in both modes
+       ========================================================= */
+
+    /* ---------- Light Theme Tokens ---------- */
     :root {
-      --primary: #176B70;
-      --primary-light: #E7F4F3;
-      --navy: #172B4D;
-      --background: #F6F8FB;
-      --white: #FFFFFF;
-      --text: #253858;
-      --muted: #7A869A;
-      --border: #E8EDF3;
-      --green: #2E9B72;
-      --yellow: #E8A23A;
-      --red: #E05D5D;
-      --shadow: 0 5px 22px rgba(23, 43, 77, 0.045);
-      --sidebar-width: 250px;
+      --palette-1: #09637E;
+      /* Deep teal blue */
+      --palette-2: #088395;
+      /* Ocean teal */
+      --palette-3: #7AB2B2;
+      /* Soft muted teal */
+      --palette-4: #EBF4F6;
+      /* Pale ice blue */
+
+      --bg: #EBF4F6;
+      --surface: #FFFFFF;
+      --surface-alt: #F2F8F9;
+      --border: #C2DFE5;
+      --border-strong: #7AB2B2;
+
+      --ink: #072530;
+      /* High-contrast deep navy text */
+      --ink-soft: #09637E;
+      /* Readable teal secondary */
+      --ink-faint: #3B6A76;
+      /* Readable tertiary text */
+
+      --primary: #09637E;
+      --primary-600: #074E63;
+      --primary-soft: #EBF4F6;
+      --accent: #088395;
+      --accent-soft: rgba(8, 131, 149, 0.14);
+      --teal: #7AB2B2;
+      --teal-soft: rgba(122, 178, 178, 0.22);
+
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 20px;
+      --shadow-sm: 0 1px 3px rgba(9, 99, 126, .08);
+      --shadow-md: 0 6px 18px rgba(9, 99, 126, .11);
+      --shadow-lg: 0 14px 34px rgba(9, 99, 126, .16);
+
+      --font-display: "Fraunces", "Georgia", serif;
+      --font-body: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+
+      --topbar-h: 72px;
+      --ease: cubic-bezier(.4, 0, .2, 1);
     }
 
-    * {
+    /* ---------- Dark Theme Tokens ---------- */
+    html[data-theme="dark"] {
+      --bg: #05161C;
+      --surface: #09242E;
+      --surface-alt: #0E303D;
+      --border: #184755;
+      --border-strong: #7AB2B2;
+
+      --ink: #EBF4F6;
+      /* Bright pale ice blue text for high contrast */
+      --ink-soft: #B1DBE3;
+      /* Soft ice-teal secondary text */
+      --ink-faint: #7AB2B2;
+      /* Muted teal tertiary text */
+
+      --primary: #088395;
+      --primary-600: #09637E;
+      --primary-soft: #0E303D;
+      --accent: #7AB2B2;
+      --accent-soft: rgba(122, 178, 178, 0.2);
+      --teal: #7AB2B2;
+      --teal-soft: rgba(122, 178, 178, 0.2);
+
+      --shadow-sm: 0 1px 3px rgba(0, 0, 0, .45);
+      --shadow-md: 0 6px 18px rgba(0, 0, 0, .5);
+      --shadow-lg: 0 14px 34px rgba(0, 0, 0, .65);
+    }
+
+    /* ---------- Reset ---------- */
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
       margin: 0;
       padding: 0;
-      box-sizing: border-box;
+    }
+
+    html {
+      -webkit-text-size-adjust: 100%;
+      scroll-behavior: smooth;
     }
 
     body {
-      font-family: 'Inter', sans-serif;
-      background: var(--background);
-      color: var(--text);
+      font-family: var(--font-body);
+      background: var(--bg);
+      color: var(--ink);
+      font-size: 15px;
+      line-height: 1.55;
       min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      transition: background .25s var(--ease), color .25s var(--ease);
     }
 
-    button,
-    a {
-      font: inherit;
+    :focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+      border-radius: 4px;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4 {
+      font-family: var(--font-display);
+      color: var(--ink);
+      font-weight: 600;
+      line-height: 1.15;
     }
 
     a {
-      text-decoration: none;
       color: inherit;
+      text-decoration: none;
     }
 
     button {
+      font: inherit;
+      color: inherit;
+      background: none;
+      border: none;
       cursor: pointer;
     }
 
-    .sidebar {
-      width: var(--sidebar-width);
-      height: 100vh;
-      position: fixed;
-      top: 0;
-      left: 0;
-      background: var(--white);
-      border-right: 1px solid var(--border);
-      padding: 27px 18px;
-      z-index: 1000;
-      display: flex;
-      flex-direction: column;
-      transition: transform 0.3s ease;
+    .container {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 0 28px;
+      width: 100%;
     }
 
-    .brand {
+    /* ---------- Top Navigation ---------- */
+    .home-nav {
+      position: sticky;
+      top: 0;
+      z-index: 150;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      box-shadow: var(--shadow-sm);
+      transition: background .25s var(--ease), border-color .25s var(--ease);
+    }
+
+    .home-nav-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 22px;
+      padding: 16px 28px;
+    }
+
+    .home-brand {
       display: flex;
       align-items: center;
       gap: 12px;
-      padding: 0 10px;
-      margin-bottom: 42px;
+      font-family: var(--font-display);
+      font-size: 21px;
+      font-weight: 700;
+      color: var(--ink);
+      letter-spacing: -0.3px;
     }
 
-    .brand-logo {
-      width: 43px;
-      height: 43px;
-      border-radius: 13px;
+    .brand-mark-sm {
+      width: 38px;
+      height: 38px;
+      border-radius: 11px;
+      background: var(--primary);
+      color: #FFFFFF;
       display: flex;
       align-items: center;
       justify-content: center;
-      background: var(--primary);
-      color: white;
-      font-size: 23px;
+      font-family: var(--font-display);
       font-weight: 800;
-      box-shadow: 0 5px 12px rgba(23, 107, 112, 0.2);
+      font-size: 15px;
+      flex: 0 0 auto;
+      box-shadow: var(--shadow-sm);
     }
 
-    .brand-name {
-      color: var(--navy);
-      font-size: 19px;
-      font-weight: 800;
-      letter-spacing: -0.7px;
+    html[data-theme="dark"] .brand-mark-sm {
+      background: var(--accent);
+      color: #05161C;
     }
 
-    .brand-subtitle {
-      font-size: 10px;
-      color: var(--muted);
-      margin-top: 4px;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-    }
-
-    .nav-label {
-      padding: 0 13px;
-      margin-bottom: 13px;
-      color: #9AA5B5;
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: 1.4px;
-      text-transform: uppercase;
-    }
-
-    .nav-menu {
-      list-style: none;
-      display: flex;
-      flex-direction: column;
-      gap: 7px;
-    }
-
-    .nav-link {
+    .home-nav-links {
       display: flex;
       align-items: center;
-      gap: 13px;
-      padding: 13px 14px;
-      border-radius: 10px;
-      color: #68778D;
-      font-size: 13px;
+      gap: 6px;
+    }
+
+    .home-nav-links a {
+      padding: 9px 15px;
+      border-radius: 8px;
+      font-size: 13.5px;
       font-weight: 600;
-      transition: all 0.2s ease;
+      color: var(--ink-soft);
+      transition: background .16s var(--ease), color .16s var(--ease);
     }
 
-    .nav-icon {
-      width: 21px;
-      text-align: center;
-      font-size: 17px;
+    .home-nav-links a:hover {
+      background: var(--surface-alt);
+      color: var(--ink);
     }
 
-    .nav-link:hover {
-      background: #F4F8FA;
-      color: var(--primary);
+    .home-nav-links a.active {
+      color: var(--ink);
+      background: var(--surface-alt);
+      font-weight: 700;
+      border: 1px solid var(--border);
     }
 
-    .nav-link.active {
-      background: var(--primary-light);
-      color: var(--primary);
+    .home-nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
     }
 
-    .sidebar-bottom {
-      margin-top: auto;
-      border-top: 1px solid var(--border);
-      padding: 19px 8px 0;
+    .theme-switch {
+      width: 52px;
+      height: 30px;
+      border-radius: 20px;
+      background: var(--surface-alt);
+      border: 1px solid var(--border);
+      position: relative;
+      flex: 0 0 auto;
+      cursor: pointer;
     }
 
-    .sidebar-note {
-      background: #F4F8FA;
-      padding: 15px;
-      border-radius: 12px;
-    }
-
-    .sidebar-note strong {
-      display: block;
-      font-size: 12px;
-      color: var(--navy);
-      margin-bottom: 7px;
-    }
-
-    .sidebar-note p {
+    .theme-switch .knob {
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: #FFFFFF;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       font-size: 11px;
-      line-height: 1.7;
-      color: var(--muted);
+      transition: left .22s var(--ease), background .22s var(--ease), color .22s var(--ease);
     }
 
-    .app-layout {
-      margin-left: var(--sidebar-width);
-      min-height: 100vh;
+    html[data-theme="dark"] .theme-switch .knob {
+      left: 24px;
+      background: var(--accent);
+      color: #05161C;
     }
 
-    .topbar {
-      height: 76px;
-      background: var(--white);
+    .hamburger-btn {
+      display: none;
+      width: 38px;
+      height: 38px;
+      border-radius: 9px;
+      align-items: center;
+      justify-content: center;
+      font-size: 17px;
+      background: var(--surface-alt);
+      color: var(--ink);
+      border: 1px solid var(--border);
+    }
+
+    .home-mobile-menu {
+      display: none;
+      flex-direction: column;
+      padding: 8px 24px 18px;
+      border-top: 1px solid var(--border);
+      background: var(--surface);
+    }
+
+    .home-mobile-menu.open {
+      display: flex;
+    }
+
+    .home-mobile-menu a {
+      padding: 12px 4px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--ink);
       border-bottom: 1px solid var(--border);
-      display: flex;
+    }
+
+    .home-mobile-menu a:last-child {
+      border-bottom: none;
+    }
+
+    @media (max-width: 980px) {
+      .home-nav-links {
+        display: none;
+      }
+
+      .hamburger-btn {
+        display: flex;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .home-nav-actions .btn-sm {
+        display: none;
+      }
+    }
+
+    /* ---------- Buttons ---------- */
+    .btn {
+      display: inline-flex;
       align-items: center;
-      justify-content: space-between;
-      padding: 0 35px;
-      position: sticky;
-      top: 0;
-      z-index: 100;
+      justify-content: center;
+      gap: 8px;
+      padding: 11px 20px;
+      border-radius: 10px;
+      font-size: 13.5px;
+      font-weight: 600;
+      transition: transform .12s var(--ease), box-shadow .18s var(--ease), background .18s var(--ease), color .18s var(--ease), border-color .18s var(--ease);
+      border: 1px solid transparent;
+      white-space: nowrap;
+      cursor: pointer;
     }
 
-    .breadcrumb {
-      font-size: 12px;
-      color: var(--muted);
+    .btn:active {
+      transform: scale(.97);
     }
 
-    .breadcrumb strong {
-      color: var(--navy);
+    .btn-primary {
+      background: var(--primary);
+      color: #FFFFFF;
+      box-shadow: 0 4px 14px rgba(9, 99, 126, 0.25);
     }
 
-    .topbar-right {
-      display: flex;
+    .btn-primary:hover {
+      background: var(--primary-600);
+      box-shadow: var(--shadow-md);
+    }
+
+    html[data-theme="dark"] .btn-primary {
+      background: var(--accent);
+      color: #05161C;
+      box-shadow: 0 4px 14px rgba(122, 178, 178, 0.25);
+    }
+
+    html[data-theme="dark"] .btn-primary:hover {
+      background: var(--palette-4);
+      color: #05161C;
+    }
+
+    .btn-outline {
+      background: transparent;
+      border-color: var(--border-strong);
+      color: var(--ink);
+    }
+
+    .btn-outline:hover {
+      border-color: var(--primary);
+      background: var(--surface);
+      color: var(--primary);
+    }
+
+    html[data-theme="dark"] .btn-outline {
+      border-color: var(--border-strong);
+      color: var(--ink);
+    }
+
+    html[data-theme="dark"] .btn-outline:hover {
+      border-color: var(--accent);
+      background: var(--surface-alt);
+      color: var(--ink);
+    }
+
+    .btn-sm {
+      padding: 8px 15px;
+      font-size: 12.5px;
+      border-radius: 8px;
+    }
+
+    /* ---------- Hero section ---------- */
+    .hero {
+      padding: 68px 0 60px;
+      background:
+        radial-gradient(circle at 18% 20%, rgba(9, 99, 126, .12), transparent 48%),
+        radial-gradient(circle at 85% 70%, rgba(8, 131, 149, .09), transparent 50%),
+        var(--surface);
+      border-bottom: 1px solid var(--border);
+      transition: background .25s var(--ease), border-color .25s var(--ease);
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 48px;
       align-items: center;
-      gap: 14px;
     }
 
-    .live-indicator {
-      display: flex;
+    .hero-eyebrow {
+      display: inline-flex;
       align-items: center;
       gap: 8px;
-      background: #F0F9F5;
-      border: 1px solid #D9EFE3;
-      border-radius: 30px;
-      padding: 9px 13px;
-      font-size: 11px;
-      font-weight: 600;
-      color: #267C5A;
-    }
-
-    .live-dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background: var(--green);
-    }
-
-    .profile-avatar {
-      width: 37px;
-      height: 37px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 12px;
-      color: white;
-      background: var(--navy);
+      background: var(--surface-alt);
+      border: 1px solid var(--border-strong);
+      color: var(--ink-soft);
+      padding: 6px 14px;
+      border-radius: 20px;
       font-size: 12px;
       font-weight: 700;
+      margin-bottom: 20px;
     }
 
-    .mobile-menu {
-      display: none;
-      border: 0;
-      background: transparent;
-      color: var(--navy);
-      font-size: 24px;
+    html[data-theme="dark"] .hero-eyebrow {
+      background: var(--surface-alt);
+      border-color: var(--border);
+      color: var(--ink-faint);
     }
 
-    .page-container {
-      max-width: 1600px;
-      margin: auto;
-      padding: 32px 35px 45px;
+    .hero h1 {
+      font-size: 46px;
+      line-height: 1.08;
+      margin-bottom: 18px;
+      letter-spacing: -0.8px;
+      color: var(--ink);
     }
 
-    .welcome-banner {
-      background: linear-gradient(115deg, #176B70 0%, #205D70 55%, #243F68 100%);
-      border-radius: 17px;
-      padding: 30px 32px;
-      color: white;
+    .hero h1 em {
+      color: var(--primary);
+      font-style: normal;
+      text-decoration: underline;
+      text-decoration-color: var(--teal);
+      text-underline-offset: 4px;
+    }
+
+    html[data-theme="dark"] .hero h1 em {
+      color: var(--accent);
+      text-decoration-color: var(--primary);
+    }
+
+    .hero p.lead {
+      font-size: 16px;
+      color: var(--ink-soft);
+      max-width: 530px;
+      margin-bottom: 28px;
+      line-height: 1.7;
+    }
+
+    html[data-theme="dark"] .hero p.lead {
+      color: var(--ink-soft);
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    /* ---------- Hero Live Prediction Card ---------- */
+    .hero-figure {
+      background: linear-gradient(135deg, #09637E 0%, #088395 100%);
+      border: 1px solid #09637E;
+      border-radius: var(--radius-lg);
+      padding: 30px;
+      color: #FFFFFF;
       position: relative;
       overflow: hidden;
-      margin-bottom: 27px;
+      box-shadow: var(--shadow-lg);
+      transition: background .25s var(--ease), border-color .25s var(--ease);
     }
 
-    .welcome-banner::before {
+    html[data-theme="dark"] .hero-figure {
+      background: linear-gradient(135deg, #082833 0%, #0E3644 100%);
+      border-color: var(--border);
+      color: var(--ink);
+    }
+
+    .hero-figure::after {
       content: "";
-      width: 260px;
-      height: 260px;
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      border-radius: 50%;
       position: absolute;
-      right: -65px;
-      top: -120px;
+      width: 220px;
+      height: 220px;
+      background: radial-gradient(circle, rgba(235, 244, 246, .18), transparent 70%);
+      top: -60px;
+      right: -60px;
+      pointer-events: none;
     }
 
-    .welcome-banner::after {
-      content: "";
-      width: 190px;
-      height: 190px;
-      border: 1px solid rgba(255, 255, 255, 0.10);
-      border-radius: 50%;
-      position: absolute;
-      right: 35px;
-      bottom: -145px;
-    }
-
-    .welcome-label {
-      display: inline-block;
-      padding: 6px 10px;
-      border-radius: 5px;
-      background: rgba(255, 255, 255, 0.13);
-      font-size: 10px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 1.4px;
-      margin-bottom: 15px;
-    }
-
-    .welcome-banner h1 {
-      font-size: clamp(23px, 2.5vw, 30px);
-      font-weight: 800;
-      letter-spacing: -1px;
-      margin-bottom: 10px;
-      position: relative;
-      z-index: 1;
-    }
-
-    .welcome-banner p {
-      font-size: 13px;
-      line-height: 1.8;
-      color: rgba(255, 255, 255, 0.82);
-      max-width: 600px;
-      position: relative;
-      z-index: 1;
-    }
-
-    .section-heading {
+    .hero-figure .hf-row {
       display: flex;
-      align-items: center;
       justify-content: space-between;
-      gap: 15px;
-      margin: 28px 0 17px;
+      align-items: center;
+      margin-bottom: 16px;
     }
 
-    .section-heading h2 {
-      color: var(--navy);
-      font-size: 16px;
-      font-weight: 800;
+    .hero-figure .hf-badge {
+      background: rgba(235, 244, 246, 0.2);
+      border: 1px solid rgba(235, 244, 246, 0.35);
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 11.5px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: #EBF4F6;
     }
 
-    .section-heading p {
-      color: var(--muted);
-      font-size: 11px;
-      margin-top: 5px;
-      line-height: 1.6;
+    html[data-theme="dark"] .hero-figure .hf-badge {
+      background: rgba(122, 178, 178, 0.18);
+      border-color: rgba(122, 178, 178, 0.35);
+      color: var(--ink);
     }
 
-    .section-caption {
-      color: var(--muted);
-      font-size: 11px;
+    .hero-figure .hf-score {
+      font-family: var(--font-display);
+      font-size: 56px;
+      font-weight: 700;
+      line-height: 1;
+      color: #FFFFFF;
+      letter-spacing: -1px;
+    }
+
+    html[data-theme="dark"] .hero-figure .hf-score {
+      color: var(--ink);
+    }
+
+    .hero-figure .hf-sub {
+      font-size: 13.5px;
+      color: #EBF4F6;
+      margin-top: 8px;
+      font-weight: 500;
+    }
+
+    html[data-theme="dark"] .hero-figure .hf-sub {
+      color: var(--ink-soft);
+    }
+
+    .hero-figure .divider {
+      height: 1px;
+      background: rgba(235, 244, 246, 0.25);
+      margin: 18px 0;
+    }
+
+    html[data-theme="dark"] .hero-figure .divider {
+      background: rgba(122, 178, 178, 0.25);
+    }
+
+    .hero-figure .hf-foot {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12.5px;
+      color: #EBF4F6;
+      font-weight: 500;
+    }
+
+    html[data-theme="dark"] .hero-figure .hf-foot {
+      color: var(--ink-soft);
+    }
+
+    .hero-figure .hf-foot span {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* ---------- 4 Summary Stat Cards Section ---------- */
+    .summary-section {
+      padding: 48px 0 56px;
+      background: var(--bg);
+      flex: 1;
+      transition: background .25s var(--ease), border-color .25s var(--ease);
+    }
+
+    .summary-heading {
+      margin-bottom: 24px;
+    }
+
+    .summary-heading h2 {
+      font-size: 22px;
+      font-family: var(--font-body);
+      font-weight: 700;
+      color: var(--ink);
+      letter-spacing: -0.4px;
+    }
+
+    .summary-heading p {
+      font-size: 13.5px;
+      color: var(--ink-soft);
+      margin-top: 4px;
     }
 
     .stats-grid {
       display: grid;
       grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 18px;
+      gap: 20px;
     }
 
     .stat-card {
-      background: var(--white);
+      background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 13px;
-      padding: 21px;
-      box-shadow: var(--shadow);
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      border-radius: var(--radius-md);
+      padding: 24px;
+      box-shadow: var(--shadow-sm);
+      transition: transform .2s var(--ease), box-shadow .2s var(--ease), border-color .2s var(--ease);
       min-width: 0;
+      position: relative;
     }
 
     .stat-card:hover {
       transform: translateY(-3px);
-      box-shadow: 0 10px 25px rgba(23, 43, 77, 0.07);
+      box-shadow: var(--shadow-md);
+      border-color: var(--border-strong);
     }
 
     .stat-top {
@@ -373,1653 +639,282 @@
       align-items: center;
       justify-content: space-between;
       gap: 8px;
-      margin-bottom: 20px;
+      margin-bottom: 16px;
     }
 
     .stat-label {
-      font-size: 11px;
-      color: var(--muted);
+      font-size: 12px;
+      color: var(--ink-soft);
       font-weight: 600;
-      line-height: 1.5;
+      line-height: 1.4;
     }
 
     .stat-icon {
-      width: 39px;
-      height: 39px;
+      width: 40px;
+      height: 40px;
       display: flex;
       align-items: center;
       justify-content: center;
       border-radius: 11px;
       font-size: 18px;
       flex-shrink: 0;
+      background: var(--palette-4);
+      color: var(--palette-1);
+      border: 1px solid var(--border);
+    }
+
+    html[data-theme="dark"] .stat-icon {
+      background: var(--surface-alt);
+      color: var(--accent);
+      border-color: var(--border);
     }
 
     .icon-teal {
-      background: #E5F5F3;
+      color: var(--palette-1);
     }
 
     .icon-blue {
-      background: #EAF0FC;
+      color: var(--palette-2);
     }
 
     .icon-orange {
-      background: #FFF3E5;
+      color: var(--palette-1);
     }
 
     .icon-purple {
-      background: #F0EBFC;
+      color: var(--palette-2);
+    }
+
+    html[data-theme="dark"] .icon-teal,
+    html[data-theme="dark"] .icon-blue,
+    html[data-theme="dark"] .icon-orange,
+    html[data-theme="dark"] .icon-purple {
+      color: var(--accent);
     }
 
     .stat-value {
-      color: var(--navy);
-      font-size: 27px;
+      color: var(--ink);
+      font-size: 34px;
       font-weight: 800;
-      letter-spacing: -0.8px;
+      letter-spacing: -1px;
       overflow-wrap: anywhere;
+      font-family: var(--font-body);
+      line-height: 1.15;
     }
 
     .stat-description {
-      margin-top: 8px;
-      font-size: 10px;
+      margin-top: 10px;
+      font-size: 11.5px;
       line-height: 1.6;
-      color: var(--muted);
+      color: var(--ink-faint);
     }
 
-    .quick-actions {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 15px;
+    /* ---------- Footer ---------- */
+    .site-footer {
+      border-top: 1px solid var(--border);
+      padding: 26px 0;
+      color: var(--ink-soft);
+      font-size: 12.5px;
+      background: var(--surface);
+      margin-top: auto;
+      transition: background .25s var(--ease), border-color .25s var(--ease);
     }
 
-    .action-card {
-      background: var(--white);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 18px;
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      transition: all 0.2s ease;
-    }
-
-    .action-card:hover {
-      border-color: #B8DAD8;
-      transform: translateY(-2px);
-      box-shadow: var(--shadow);
-    }
-
-    .action-icon {
-      width: 43px;
-      height: 43px;
-      border-radius: 11px;
-      background: var(--primary-light);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 20px;
-      flex-shrink: 0;
-    }
-
-    .action-card h3 {
-      font-size: 12px;
-      color: var(--navy);
-      margin-bottom: 6px;
-    }
-
-    .action-card p {
-      font-size: 10px;
-      line-height: 1.6;
-      color: var(--muted);
-    }
-
-    .action-arrow {
-      margin-left: auto;
-      color: var(--primary);
-      font-size: 18px;
-    }
-
-    .charts-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 20px;
-    }
-
-    .chart-card {
-      background: var(--white);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 23px;
-      box-shadow: var(--shadow);
-      min-width: 0;
-    }
-
-    .chart-header {
+    .footer-inner {
       display: flex;
       justify-content: space-between;
-      align-items: flex-start;
-      gap: 12px;
-      margin-bottom: 20px;
-    }
-
-    .chart-header h3 {
-      font-size: 14px;
-      color: var(--navy);
-      font-weight: 800;
-    }
-
-    .chart-header p {
-      font-size: 10px;
-      color: var(--muted);
-      margin-top: 7px;
-      line-height: 1.6;
-    }
-
-    .chart-tag {
-      background: #F0F7F7;
-      color: var(--primary);
-      padding: 7px 9px;
-      border-radius: 7px;
-      font-size: 9px;
-      font-weight: 700;
-      white-space: nowrap;
-    }
-
-    .chart-container {
-      position: relative;
-      height: 255px;
-      width: 100%;
-    }
-
-    .score-overview {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 13px;
-    }
-
-    .score-box {
-      background: #F7F9FC;
-      border: 1px solid #EDF1F6;
-      border-radius: 11px;
-      padding: 18px 12px;
-      text-align: center;
-      min-width: 0;
-    }
-
-    .score-box .score-number {
-      font-size: 25px;
-      font-weight: 800;
-      color: var(--navy);
-      overflow-wrap: anywhere;
-    }
-
-    .score-box .score-label {
-      margin-top: 9px;
-      font-size: 10px;
-      color: var(--muted);
-      font-weight: 600;
-    }
-
-    .score-box.average {
-      background: #EFF8F7;
-      border-color: #DDEFEA;
-    }
-
-    .score-box.average .score-number {
-      color: var(--primary);
-    }
-
-    .score-box.highest .score-number {
-      color: var(--green);
-    }
-
-    .score-box.lowest .score-number {
-      color: var(--red);
-    }
-
-    .score-chart-wrap {
-      margin-top: 25px;
-      height: 175px;
-      position: relative;
-    }
-
-    .table-card {
-      margin-top: 20px;
-      background: var(--white);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      box-shadow: var(--shadow);
-      overflow: hidden;
-    }
-
-    .table-card-header {
-      padding: 22px 24px;
-      display: flex;
       align-items: center;
-      justify-content: space-between;
+      flex-wrap: wrap;
       gap: 12px;
-      border-bottom: 1px solid var(--border);
     }
 
-    .table-card-header h3 {
-      font-size: 14px;
-      color: var(--navy);
-    }
-
-    .table-card-header p {
-      font-size: 10px;
-      color: var(--muted);
-      margin-top: 6px;
-    }
-
-    .view-all {
-      color: var(--primary);
-      font-size: 11px;
-      font-weight: 700;
-      white-space: nowrap;
-    }
-
-    .table-wrapper {
-      width: 100%;
-      overflow-x: auto;
-    }
-
-    .data-table {
-      width: 100%;
-      border-collapse: collapse;
-      text-align: left;
-    }
-
-    .data-table th {
-      background: #FAFBFD;
-      color: #8390A3;
-      font-size: 9px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.7px;
-      padding: 14px 22px;
-      white-space: nowrap;
-    }
-
-    .data-table td {
-      padding: 16px 22px;
-      border-top: 1px solid #F0F2F6;
-      font-size: 11px;
-      color: #526179;
-      white-space: nowrap;
-    }
-
-    .data-table tbody tr:hover {
-      background: #FAFCFD;
-    }
-
-    .record-id {
-      font-weight: 700;
-      color: var(--navy);
-    }
-
-    .score-cell {
-      font-weight: 800;
-      color: var(--navy);
-    }
-
-    .category-badge {
-      display: inline-block;
-      padding: 6px 9px;
-      border-radius: 6px;
-      font-size: 9px;
-      font-weight: 700;
-    }
-
-    .category-high {
-      background: #E5F6ED;
-      color: #238458;
-    }
-
-    .category-average {
-      background: #FFF4DF;
-      color: #A56A13;
-    }
-
-    .category-low {
-      background: #FDECEC;
-      color: #C04444;
-    }
-
-    .empty-state {
-      padding: 40px 20px;
-      text-align: center;
-      color: var(--muted);
-      font-size: 12px;
-      line-height: 1.8;
-    }
-
-    .empty-state .empty-icon {
-      display: block;
-      font-size: 29px;
-      margin-bottom: 12px;
-    }
-
-    .footer {
-      text-align: center;
-      padding: 28px 10px 0;
-      color: #98A3B3;
-      font-size: 10px;
-    }
-
-    .toast {
-      position: fixed;
-      right: 25px;
-      bottom: 25px;
-      padding: 13px 18px;
-      border-radius: 10px;
-      background: var(--navy);
-      color: white;
-      font-size: 12px;
-      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-      z-index: 2000;
-      display: none;
-      max-width: calc(100vw - 40px);
-    }
-
-    .toast.show {
-      display: block;
-      animation: slideUp 0.25s ease;
-    }
-
-    @keyframes slideUp {
-      from {
-        opacity: 0;
-        transform: translateY(10px);
+    /* ---------- Responsive ---------- */
+    @media (max-width: 1080px) {
+      .hero-grid {
+        grid-template-columns: 1fr;
+        gap: 36px;
       }
 
-      to {
-        opacity: 1;
-        transform: translateY(0);
+      .hero-figure {
+        max-width: 480px;
       }
-    }
 
-    @media (max-width: 1200px) {
       .stats-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
-
-      .page-container {
-        padding: 28px 25px 40px;
-      }
-
-      .topbar {
-        padding: 0 25px;
-      }
     }
 
-    @media (max-width: 900px) {
-      .sidebar {
-        transform: translateX(-100%);
-        box-shadow: none;
+    @media (max-width: 580px) {
+      .hero h1 {
+        font-size: 34px;
       }
 
-      .sidebar.open {
-        transform: translateX(0);
-        box-shadow: 10px 0 35px rgba(0, 0, 0, 0.12);
-      }
-
-      .app-layout {
-        margin-left: 0;
-      }
-
-      .mobile-menu {
-        display: block;
-      }
-
-      .topbar-left {
-        display: flex;
-        align-items: center;
-        gap: 13px;
-      }
-
-      .charts-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    @media (max-width: 600px) {
-      .page-container {
-        padding: 20px 15px 30px;
-      }
-
-      .topbar {
-        height: 65px;
-        padding: 0 15px;
-      }
-
-      .breadcrumb {
-        font-size: 11px;
-      }
-
-      .live-indicator {
-        padding: 8px;
-        font-size: 9px;
-      }
-
-      .profile-avatar {
-        width: 32px;
-        height: 32px;
-      }
-
-      .welcome-banner {
-        padding: 24px 20px;
-        margin-bottom: 20px;
-      }
-
-      .welcome-banner h1 {
-        font-size: 24px;
+      .container {
+        padding: 0 18px;
       }
 
       .stats-grid {
-        gap: 11px;
-      }
-
-      .stat-card {
-        padding: 15px;
-      }
-
-      .stat-value {
-        font-size: 23px;
-      }
-
-      .stat-top {
-        align-items: flex-start;
-        margin-bottom: 15px;
-      }
-
-      .stat-icon {
-        width: 33px;
-        height: 33px;
-        font-size: 15px;
-      }
-
-      .quick-actions {
         grid-template-columns: 1fr;
       }
 
-      .chart-card {
-        padding: 17px;
-      }
-
-      .chart-container {
-        height: 230px;
-      }
-
-      .score-overview {
-        gap: 8px;
-      }
-
-      .score-box {
-        padding: 14px 7px;
-      }
-
-      .score-box .score-number {
-        font-size: 20px;
-      }
-
-      .section-heading {
+      .footer-inner {
+        flex-direction: column;
         align-items: flex-start;
-      }
-
-      .table-card-header {
-        padding: 18px;
-      }
-
-      .data-table th,
-      .data-table td {
-        padding: 13px 15px;
       }
     }
   </style>
 </head>
 
-<body>
+<body data-page="home">
 
-  <!-- Sidebar -->
-  <aside class="sidebar" id="sidebar">
+  <!-- ===== Top Navigation ===== -->
+  <header class="home-nav" id="homeNav">
+    <div class="container home-nav-inner">
+      <a href="index.html" class="home-brand" aria-label="EduPredict Home">
+        <span class="brand-mark-sm">EP</span>
+        <span>EduPredict</span>
+      </a>
 
-    <a href="index.html" class="brand">
-      <div class="brand-logo">E</div>
-      <div>
-        <div class="brand-name">EduPredict</div>
-        <div class="brand-subtitle">Student Analytics</div>
-      </div>
-    </a>
+      <!-- Navigation links -->
+      <nav class="home-nav-links" aria-label="Primary navigation">
+        <a href="index.html" class="active">Home</a>
+        <a href="predict.html">Predict Performance</a>
+        <a href="analytics.html">Analytics/Dashboard</a>
+        <a href="history.html">Prediction History</a>
+      </nav>
 
-    <div class="nav-label">Workspace</div>
+      <div class="home-nav-actions">
+        <!-- Theme toggle switch -->
+        <button class="theme-switch" id="themeSwitch" type="button" aria-label="Toggle dark / light mode"
+          title="Toggle dark / light mode">
+          <span class="knob"><i class="fa-solid fa-moon"></i></span>
+        </button>
 
-    <ul class="nav-menu">
-      <li>
-        <a href="index.html" class="nav-link active">
-          <span class="nav-icon">▦</span>
-          <span>Overview</span>
-        </a>
-      </li>
+        <a href="predict.html" class="btn btn-primary btn-sm">Get Started</a>
 
-      <li>
-        <a href="predict.html" class="nav-link">
-          <span class="nav-icon">◎</span>
-          <span>Predict Performance</span>
-        </a>
-      </li>
-
-      <li>
-        <a href="analytics.html" class="nav-link">
-          <span class="nav-icon">▥</span>
-          <span>Analytics</span>
-        </a>
-      </li>
-
-      <li>
-        <a href="history.html" class="nav-link">
-          <span class="nav-icon">◷</span>
-          <span>Prediction History</span>
-        </a>
-      </li>
-    </ul>
-
-    <div class="sidebar-bottom">
-      <div class="sidebar-note">
-        <strong>✦ Smart Education</strong>
-        <p>Use machine learning insights to understand student performance and support better learning outcomes.</p>
+        <button class="hamburger-btn" id="homeHamburgerBtn" type="button" aria-label="Open mobile menu">
+          <i class="fa-solid fa-bars"></i>
+        </button>
       </div>
     </div>
 
-  </aside>
+    <!-- Mobile Navigation Drawer -->
+    <div class="home-mobile-menu" id="homeMobileMenu">
+      <a href="index.html">Home</a>
+      <a href="predict.html">Predict Performance</a>
+      <a href="analytics.html">Analytics/Dashboard</a>
+      <a href="history.html">Prediction History</a>
+    </div>
+  </header>
 
-  <!-- Main layout -->
-  <div class="app-layout">
-
-    <!-- Topbar -->
-    <header class="topbar">
-
-      <div class="topbar-left">
-        <button class="mobile-menu" id="mobileMenu" aria-label="Open navigation">
-          ☰
-        </button>
-
-        <div class="breadcrumb">
-          Workspace / <strong>Overview</strong>
+  <!-- ===== Hero Section ===== -->
+  <section class="hero">
+    <div class="container hero-grid">
+      <div>
+        <h1>Predict exam performance <em>before</em> results happen.</h1>
+        <p class="lead">EduPredict analyzes attendance, assignment scores, study habits and past performance to
+          forecast how a student will do — helping teachers step in early, not after report cards go out.</p>
+        <div class="hero-actions">
+          <a href="predict.html" class="btn btn-primary"><i class="fa-solid fa-bullseye"></i> Try a Prediction</a>
+          <a href="analytics.html" class="btn btn-outline"><i class="fa-solid fa-chart-line"></i> View Analytics/Dashboard</a>
         </div>
       </div>
 
-      <div class="topbar-right">
-        <div class="live-indicator">
-          <span class="live-dot"></span>
-          <span id="connectionLabel">Connecting...</span>
+      <!-- Right live model prediction card connected to real backend -->
+      <div class="hero-figure" id="heroFigureCard">
+        <div class="hf-row">
+          <span class="hf-badge" id="heroBadge"><i class="fa-solid fa-bolt"></i> Live prediction</span>
+          <i class="fa-solid fa-robot" style="font-size: 18px;" aria-hidden="true"></i>
         </div>
+        <div class="hf-score" id="heroScore">—</div>
+        <div class="hf-sub" id="heroSub">Predicted exam score</div>
+        <div class="divider"></div>
+        <div class="hf-foot">
+          <span id="heroMetaModel"><i class="fa-solid fa-brain"></i> Linear Regression</span>
+          <span id="heroMetaCategory"><i class="fa-solid fa-circle-check"></i> Model Active</span>
+        </div>
+      </div>
+    </div>
+  </section>
 
-        <div class="profile-avatar">EP</div>
+  <!-- ===== 4 Summary Stat Cards (Live System Overview) ===== -->
+  <section class="summary-section" aria-label="System Overview Statistics">
+    <div class="container">
+      <div class="summary-heading">
+        <h2>Live System Overview</h2>
+        <p>Real-time metrics fetched from your local database and machine-learning model.</p>
       </div>
 
-    </header>
-
-    <main class="page-container">
-
-      <!-- Welcome banner -->
-      <section class="welcome-banner">
-        <span class="welcome-label">EDUCATION INTELLIGENCE</span>
-
-        <h1>Student Performance Dashboard</h1>
-
-        <p>
-          Welcome to EduPredict. Explore machine learning predictions,
-          monitor student performance, and discover meaningful insights
-          through your saved prediction data.
-        </p>
-      </section>
-
-      <!-- Statistics -->
-      <section class="stats-grid">
-
+      <div class="stats-grid">
+        <!-- Card 1: Total Predictions -->
         <article class="stat-card">
           <div class="stat-top">
             <div class="stat-label">Total Predictions</div>
             <div class="stat-icon icon-teal">◎</div>
           </div>
-
-          <div class="stat-value" id="totalPredictions">—</div>
-
+          <div class="stat-value" id="landingTotalPredictions">—</div>
           <div class="stat-description">
             Total records saved in the database
           </div>
         </article>
 
+        <!-- Card 2: Average Predicted Score -->
         <article class="stat-card">
           <div class="stat-top">
             <div class="stat-label">Average Predicted Score</div>
             <div class="stat-icon icon-blue">↗</div>
           </div>
-
-          <div class="stat-value" id="averageScore">—</div>
-
+          <div class="stat-value" id="landingAverageScore">—</div>
           <div class="stat-description">
             Average score across all predictions
           </div>
         </article>
 
+        <!-- Card 3: Model Accuracy (R²) -->
         <article class="stat-card">
           <div class="stat-top">
             <div class="stat-label">Model Accuracy (R²)</div>
             <div class="stat-icon icon-orange">✧</div>
           </div>
-
-          <div class="stat-value" id="modelAccuracy">—</div>
-
+          <div class="stat-value" id="landingModelAccuracy">—</div>
           <div class="stat-description">
             Model evaluation score from training
           </div>
         </article>
 
+        <!-- Card 4: Model Features -->
         <article class="stat-card">
           <div class="stat-top">
             <div class="stat-label">Model Features</div>
             <div class="stat-icon icon-purple">▤</div>
           </div>
-
-          <div class="stat-value" id="featureCount">—</div>
-
+          <div class="stat-value" id="landingFeatureCount">—</div>
           <div class="stat-description">
             Input variables used for prediction
           </div>
         </article>
+      </div>
+    </div>
+  </section>
 
-      </section>
-
-      <!-- Quick actions -->
-      <section>
-        <div class="section-heading">
-          <div>
-            <h2>Quick Actions</h2>
-            <p>Access your most-used project features.</p>
-          </div>
-        </div>
-
-        <div class="quick-actions">
-
-          <a href="predict.html" class="action-card">
-            <div class="action-icon">🎯</div>
-            <div>
-              <h3>Predict Performance</h3>
-              <p>Enter student details and generate a prediction.</p>
-            </div>
-            <span class="action-arrow">→</span>
-          </a>
-
-          <a href="analytics.html" class="action-card">
-            <div class="action-icon">📊</div>
-            <div>
-              <h3>Explore Analytics</h3>
-              <p>Review performance patterns and statistics.</p>
-            </div>
-            <span class="action-arrow">→</span>
-          </a>
-
-          <a href="history.html" class="action-card">
-            <div class="action-icon">📋</div>
-            <div>
-              <h3>Prediction History</h3>
-              <p>Review previously saved prediction records.</p>
-            </div>
-            <span class="action-arrow">→</span>
-          </a>
-
-        </div>
-      </section>
-
-      <!-- Charts -->
-      <section>
-
-        <div class="section-heading">
-          <div>
-            <h2>Performance Insights</h2>
-            <p>Visual analysis of predictions stored in your database.</p>
-          </div>
-
-          <span class="section-caption" id="lastUpdated">
-            Loading data...
-          </span>
-        </div>
-
-        <div class="charts-grid">
-
-          <!-- Performance distribution -->
-          <article class="chart-card">
-
-            <div class="chart-header">
-              <div>
-                <h3>Performance Distribution</h3>
-                <p>Breakdown of students by predicted performance category.</p>
-              </div>
-
-              <span class="chart-tag">DISTRIBUTION</span>
-            </div>
-
-            <div class="chart-container" id="distributionContainer">
-              <canvas id="distributionChart"></canvas>
-            </div>
-
-            <div class="empty-state" id="distributionEmpty" hidden>
-              <span class="empty-icon">📊</span>
-              No predictions available yet.<br>
-              Generate a prediction to see the distribution.
-            </div>
-
-          </article>
-
-          <!-- Prediction trend -->
-          <article class="chart-card">
-
-            <div class="chart-header">
-              <div>
-                <h3>Prediction Trend</h3>
-                <p>Average predicted score over time.</p>
-              </div>
-
-              <span class="chart-tag">TREND</span>
-            </div>
-
-            <div class="chart-container" id="trendContainer">
-              <canvas id="trendChart"></canvas>
-            </div>
-
-            <div class="empty-state" id="trendEmpty" hidden>
-              <span class="empty-icon">📈</span>
-              Your prediction trend will appear here<br>
-              after you generate predictions.
-            </div>
-
-          </article>
-
-          <!-- Score overview -->
-          <article class="chart-card">
-
-            <div class="chart-header">
-              <div>
-                <h3>Score Overview</h3>
-                <p>Key statistics calculated from saved predictions.</p>
-              </div>
-
-              <span class="chart-tag">SCORE ANALYSIS</span>
-            </div>
-
-            <div class="score-overview">
-
-              <div class="score-box average">
-                <div class="score-number" id="overviewAverage">—</div>
-                <div class="score-label">Average Score</div>
-              </div>
-
-              <div class="score-box highest">
-                <div class="score-number" id="overviewHighest">—</div>
-                <div class="score-label">Highest Score</div>
-              </div>
-
-              <div class="score-box lowest">
-                <div class="score-number" id="overviewLowest">—</div>
-                <div class="score-label">Lowest Score</div>
-              </div>
-
-            </div>
-
-            <div class="score-chart-wrap" id="scoreChartContainer">
-              <canvas id="scoreChart"></canvas>
-            </div>
-
-            <div class="empty-state" id="scoreEmpty" hidden>
-              Score statistics will appear after your first prediction.
-            </div>
-
-          </article>
-
-          <!-- Prediction category comparison -->
-          <article class="chart-card">
-
-            <div class="chart-header">
-              <div>
-                <h3>Category Comparison</h3>
-                <p>Number of saved predictions in each performance category.</p>
-              </div>
-
-              <span class="chart-tag">COMPARISON</span>
-            </div>
-
-            <div class="chart-container" id="comparisonContainer">
-              <canvas id="comparisonChart"></canvas>
-            </div>
-
-            <div class="empty-state" id="comparisonEmpty" hidden>
-              <span class="empty-icon">📉</span>
-              Category comparisons will appear here<br>
-              after you generate predictions.
-            </div>
-
-          </article>
-
-        </div>
-
-      </section>
-
-      <!-- Recent predictions table -->
-      <section class="table-card">
-
-        <div class="table-card-header">
-          <div>
-            <h3>Recent Predictions</h3>
-            <p>Your latest records retrieved from the database.</p>
-          </div>
-
-          <a href="history.html" class="view-all">
-            View All Records →
-          </a>
-        </div>
-
-        <div class="table-wrapper" id="recentTableWrapper">
-
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>Record ID</th>
-                <th>Date & Time</th>
-                <th>Predicted Score</th>
-                <th>Performance</th>
-                <th>Model</th>
-              </tr>
-            </thead>
-
-            <tbody id="recentPredictionsBody">
-              <tr>
-                <td colspan="5" class="empty-state">
-                  Loading prediction records...
-                </td>
-              </tr>
-            </tbody>
-          </table>
-
-        </div>
-
-      </section>
-
-      <footer class="footer">
-        EduPredict · Machine Learning for Student Performance Analysis
-      </footer>
-
-    </main>
-
-  </div>
-
-  <div class="toast" id="toast"></div>
+  <!-- ===== Footer (Only element kept below Live System Overview) ===== -->
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <span>© 2026 EduPredict · Predictive Analytics in Education (Academic Project)</span>
+      <span>Built with HTML, CSS &amp; JavaScript · Powered by Flask ML Backend</span>
+    </div>
+  </footer>
 
   <script>
-    const EDUPREDICT_API_BASE = "http://127.0.0.1:5000";
-
-    let distributionChart = null;
-    let trendChart = null;
-    let scoreChart = null;
-    let comparisonChart = null;
-
-    document.addEventListener("DOMContentLoaded", () => {
-      setupMobileNavigation();
-      loadDashboard();
-    });
-
-    function setupMobileNavigation() {
-      const menuButton = document.getElementById("mobileMenu");
-      const sidebar = document.getElementById("sidebar");
-
-      menuButton.addEventListener("click", () => {
-        sidebar.classList.toggle("open");
-      });
-
-      document.addEventListener("click", (event) => {
-        if (
-          window.innerWidth <= 900 &&
-          !sidebar.contains(event.target) &&
-          !menuButton.contains(event.target)
-        ) {
-          sidebar.classList.remove("open");
-        }
-      });
-    }
-
-    async function loadDashboard() {
-      const connectionLabel = document.getElementById("connectionLabel");
-
-      try {
-        const [statusResponse, featuresResponse, historyResponse] =
-          await Promise.all([
-            fetch(`${EDUPREDICT_API_BASE}/`),
-            fetch(`${EDUPREDICT_API_BASE}/features`),
-            fetch(`${EDUPREDICT_API_BASE}/history`)
-          ]);
-
-        if (!statusResponse.ok) {
-          throw new Error("Backend status request failed.");
-        }
-
-        if (!featuresResponse.ok) {
-          throw new Error("Feature request failed.");
-        }
-
-        if (!historyResponse.ok) {
-          throw new Error("History request failed.");
-        }
-
-        const statusData = await statusResponse.json();
-        const featuresData = await featuresResponse.json();
-        const historyData = await historyResponse.json();
-
-        connectionLabel.textContent = "API Connected";
-
-        const features = extractFeatures(featuresData);
-        const records = Array.isArray(historyData.history)
-          ? historyData.history
-          : [];
-
-        updateFeatureCount(features);
-        updateModelAccuracy(statusData);
-        updateStatistics(records);
-        renderCharts(records);
-        renderRecentPredictions(records);
-
-        document.getElementById("lastUpdated").textContent =
-          "Updated " + new Date().toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit"
-          });
-
-      } catch (error) {
-        console.error("Dashboard loading error:", error);
-
-        connectionLabel.textContent = "API Disconnected";
-
-        document.getElementById("totalPredictions").textContent = "—";
-        document.getElementById("averageScore").textContent = "—";
-        document.getElementById("featureCount").textContent = "—";
-        document.getElementById("modelAccuracy").textContent = "—";
-
-        showEmptyCharts(
-          "Backend unavailable. Start Flask and refresh this page."
-        );
-
-        document.getElementById("recentPredictionsBody").innerHTML = `
-                    <tr>
-                        <td colspan="5" class="empty-state">
-                            Unable to load records. Make sure your Flask
-                            backend is running at ${EDUPREDICT_API_BASE}.
-                        </td>
-                    </tr>
-                `;
-
-        document.getElementById("lastUpdated").textContent =
-          "Data unavailable";
-      }
-    }
-
-    function extractFeatures(data) {
-      if (Array.isArray(data)) {
-        return data;
-      }
-
-      if (data && Array.isArray(data.features)) {
-        return data.features;
-      }
-
-      if (data && Array.isArray(data.feature_columns)) {
-        return data.feature_columns;
-      }
-
-      if (data && Array.isArray(data.columns)) {
-        return data.columns;
-      }
-
-      return [];
-    }
-
-    function updateFeatureCount(features) {
-      document.getElementById("featureCount").textContent =
-        features.length || "—";
-    }
-
-    function updateModelAccuracy(statusData) {
-      const accuracyElement = document.getElementById("modelAccuracy");
-
-      /*
-        R² is a training/evaluation metric, not a live prediction
-        accuracy calculation. Display it only if the backend provides it.
-      */
-      const possibleValues = [
-        statusData.r2,
-        statusData.r2_score,
-        statusData.model_r2,
-        statusData.model_metrics &&
-        statusData.model_metrics.r2
-      ];
-
-      const r2 = possibleValues.find(
-        value => typeof value === "number" && Number.isFinite(value)
-      );
-
-      if (r2 !== undefined) {
-        accuracyElement.textContent = (r2 * 100).toFixed(1) + "%";
-        accuracyElement.title =
-          "R² score displayed as a percentage; this is not classification accuracy.";
-      } else {
-        accuracyElement.textContent = "N/A";
-        accuracyElement.title =
-          "Training R² was not returned by the backend.";
-      }
-    }
-
-    function getNumericScore(record) {
-      const score = Number(record.predicted_score);
-
-      return Number.isFinite(score) ? score : null;
-    }
-
-    function updateStatistics(records) {
-      const scores = records
-        .map(getNumericScore)
-        .filter(score => score !== null);
-
-      document.getElementById("totalPredictions").textContent =
-        records.length.toLocaleString();
-
-      if (scores.length === 0) {
-        document.getElementById("averageScore").textContent = "—";
-        document.getElementById("overviewAverage").textContent = "—";
-        document.getElementById("overviewHighest").textContent = "—";
-        document.getElementById("overviewLowest").textContent = "—";
-        return;
-      }
-
-      const average = scores.reduce((sum, score) => sum + score, 0)
-        / scores.length;
-
-      const highest = Math.max(...scores);
-      const lowest = Math.min(...scores);
-
-      document.getElementById("averageScore").textContent =
-        average.toFixed(1);
-
-      document.getElementById("overviewAverage").textContent =
-        average.toFixed(1);
-
-      document.getElementById("overviewHighest").textContent =
-        highest.toFixed(1);
-
-      document.getElementById("overviewLowest").textContent =
-        lowest.toFixed(1);
-    }
-
-    function getCategory(record) {
-      const category = String(
-        record.performance_category || "Unknown"
-      ).toLowerCase().trim();
-
-      if (
-        category.includes("high") ||
-        category.includes("good") ||
-        category.includes("excellent")
-      ) {
-        return "High";
-      }
-
-      if (
-        category.includes("average") ||
-        category.includes("medium") ||
-        category.includes("moderate")
-      ) {
-        return "Average";
-      }
-
-      if (
-        category.includes("low") ||
-        category.includes("poor")
-      ) {
-        return "Low";
-      }
-
-      return "Other";
-    }
-
-    function renderCharts(records) {
-      const counts = {
-        High: 0,
-        Average: 0,
-        Low: 0,
-        Other: 0
-      };
-
-      records.forEach(record => {
-        counts[getCategory(record)]++;
-      });
-
-      renderDistributionChart(counts, records.length);
-      renderTrendChart(records);
-      renderScoreChart(records);
-      renderComparisonChart(counts, records.length);
-    }
-
-    function renderDistributionChart(counts, total) {
-      const empty = document.getElementById("distributionEmpty");
-      const container = document.getElementById("distributionContainer");
-
-      if (distributionChart) {
-        distributionChart.destroy();
-        distributionChart = null;
-      }
-
-      if (!total) {
-        container.hidden = true;
-        empty.hidden = false;
-        return;
-      }
-
-      container.hidden = false;
-      empty.hidden = true;
-
-      distributionChart = new Chart(
-        document.getElementById("distributionChart"),
-        {
-          type: "doughnut",
-
-          data: {
-            labels: ["High", "Average", "Low", "Other"],
-
-            datasets: [{
-              data: [
-                counts.High,
-                counts.Average,
-                counts.Low,
-                counts.Other
-              ],
-
-              backgroundColor: [
-                "#2E9B72",
-                "#E8A23A",
-                "#E05D5D",
-                "#A8B2C1"
-              ],
-
-              borderWidth: 3,
-              borderColor: "#FFFFFF",
-              hoverOffset: 7
-            }]
-          },
-
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            cutout: "69%",
-
-            plugins: {
-              legend: {
-                position: "bottom",
-                labels: {
-                  usePointStyle: true,
-                  pointStyle: "circle",
-                  padding: 19,
-                  color: "#68778D",
-                  font: {
-                    family: "Inter",
-                    size: 10
-                  }
-                }
-              },
-
-              tooltip: {
-                callbacks: {
-                  label: function (context) {
-                    const value = context.raw;
-                    const percentage = total
-                      ? ((value / total) * 100).toFixed(1)
-                      : 0;
-
-                    return `${context.label}: ${value} (${percentage}%)`;
-                  }
-                }
-              }
-            }
-          }
-        }
-      );
-    }
-
-    function renderTrendChart(records) {
-      const empty = document.getElementById("trendEmpty");
-      const container = document.getElementById("trendContainer");
-
-      if (trendChart) {
-        trendChart.destroy();
-        trendChart = null;
-      }
-
-      const grouped = {};
-
-      records.forEach(record => {
-        const score = getNumericScore(record);
-        const date = parseRecordDate(record);
-
-        if (score === null || !date) {
-          return;
-        }
-
-        const key = date.toLocaleDateString("en-CA");
-
-        if (!grouped[key]) {
-          grouped[key] = {
-            total: 0,
-            count: 0
-          };
-        }
-
-        grouped[key].total += score;
-        grouped[key].count++;
-      });
-
-      const dates = Object.keys(grouped).sort();
-
-      if (!dates.length) {
-        container.hidden = true;
-        empty.hidden = false;
-        return;
-      }
-
-      container.hidden = false;
-      empty.hidden = true;
-
-      const labels = dates.map(key => {
-        const date = new Date(key + "T12:00:00");
-
-        return date.toLocaleDateString("en-IN", {
-          day: "numeric",
-          month: "short"
-        });
-      });
-
-      const averages = dates.map(key =>
-        grouped[key].total / grouped[key].count
-      );
-
-      trendChart = new Chart(
-        document.getElementById("trendChart"),
-        {
-          type: "line",
-
-          data: {
-            labels,
-
-            datasets: [{
-              label: "Average Predicted Score",
-              data: averages,
-              borderColor: "#176B70",
-              backgroundColor: "rgba(23, 107, 112, 0.10)",
-              fill: true,
-              tension: 0.35,
-              borderWidth: 3,
-              pointRadius: 4,
-              pointHoverRadius: 6,
-              pointBackgroundColor: "#176B70"
-            }]
-          },
-
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-
-            interaction: {
-              intersect: false,
-              mode: "index"
-            },
-
-            plugins: {
-              legend: {
-                display: false
-              },
-
-              tooltip: {
-                callbacks: {
-                  label: context =>
-                    "Average score: " +
-                    context.parsed.y.toFixed(2)
-                }
-              }
-            },
-
-            scales: {
-              x: {
-                grid: {
-                  display: false
-                },
-
-                ticks: {
-                  color: "#8390A3",
-                  font: {
-                    family: "Inter",
-                    size: 10
-                  }
-                }
-              },
-
-              y: {
-                beginAtZero: true,
-
-                grid: {
-                  color: "#EDF1F6"
-                },
-
-                ticks: {
-                  color: "#8390A3",
-                  font: {
-                    family: "Inter",
-                    size: 10
-                  }
-                }
-              }
-            }
-          }
-        }
-      );
-    }
-
-    function renderScoreChart(records) {
-      const empty = document.getElementById("scoreEmpty");
-      const container = document.getElementById("scoreChartContainer");
-
-      if (scoreChart) {
-        scoreChart.destroy();
-        scoreChart = null;
-      }
-
-      const scores = records
-        .map(getNumericScore)
-        .filter(score => score !== null);
-
-      if (!scores.length) {
-        container.hidden = true;
-        empty.hidden = false;
-        return;
-      }
-
-      container.hidden = false;
-      empty.hidden = true;
-
-      const average = scores.reduce((sum, score) => sum + score, 0)
-        / scores.length;
-
-      scoreChart = new Chart(
-        document.getElementById("scoreChart"),
-        {
-          type: "bar",
-
-          data: {
-            labels: ["Average", "Highest", "Lowest"],
-
-            datasets: [{
-              label: "Predicted Score",
-
-              data: [
-                average,
-                Math.max(...scores),
-                Math.min(...scores)
-              ],
-
-              backgroundColor: [
-                "#176B70",
-                "#2E9B72",
-                "#E05D5D"
-              ],
-
-              borderRadius: 7,
-              maxBarThickness: 42
-            }]
-          },
-
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-
-            plugins: {
-              legend: {
-                display: false
-              }
-            },
-
-            scales: {
-              x: {
-                grid: {
-                  display: false
-                },
-
-                ticks: {
-                  color: "#68778D",
-                  font: {
-                    family: "Inter",
-                    size: 10
-                  }
-                }
-              },
-
-              y: {
-                beginAtZero: true,
-
-                grid: {
-                  color: "#EDF1F6"
-                },
-
-                ticks: {
-                  color: "#8390A3",
-                  font: {
-                    family: "Inter",
-                    size: 9
-                  }
-                }
-              }
-            }
-          }
-        }
-      );
-    }
-
-    function renderComparisonChart(counts, total) {
-      const empty = document.getElementById("comparisonEmpty");
-      const container = document.getElementById("comparisonContainer");
-
-      if (comparisonChart) {
-        comparisonChart.destroy();
-        comparisonChart = null;
-      }
-
-      if (!total) {
-        container.hidden = true;
-        empty.hidden = false;
-        return;
-      }
-
-      container.hidden = false;
-      empty.hidden = true;
-
-      comparisonChart = new Chart(
-        document.getElementById("comparisonChart"),
-        {
-          type: "bar",
-
-          data: {
-            labels: ["High", "Average", "Low", "Other"],
-
-            datasets: [{
-              label: "Number of Predictions",
-
-              data: [
-                counts.High,
-                counts.Average,
-                counts.Low,
-                counts.Other
-              ],
-
-              backgroundColor: [
-                "#2E9B72",
-                "#E8A23A",
-                "#E05D5D",
-                "#A8B2C1"
-              ],
-
-              borderRadius: 7,
-              maxBarThickness: 50
-            }]
-          },
-
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-
-            plugins: {
-              legend: {
-                display: false
-              }
-            },
-
-            scales: {
-              x: {
-                grid: {
-                  display: false
-                },
-
-                ticks: {
-                  color: "#68778D",
-                  font: {
-                    family: "Inter",
-                    size: 10
-                  }
-                }
-              },
-
-              y: {
-                beginAtZero: true,
-
-                ticks: {
-                  precision: 0,
-                  color: "#8390A3",
-                  font: {
-                    family: "Inter",
-                    size: 10
-                  }
-                },
-
-                grid: {
-                  color: "#EDF1F6"
-                }
-              }
-            }
-          }
-        }
-      );
-    }
-
-    function renderRecentPredictions(records) {
-      const tbody = document.getElementById("recentPredictionsBody");
-
-      if (!records.length) {
-        tbody.innerHTML = `
-                    <tr>
-                        <td colspan="5">
-                            <div class="empty-state">
-                                <span class="empty-icon">📋</span>
-                                No prediction records found yet.<br>
-                                <a href="predict.html" class="view-all">
-                                    Generate your first prediction →
-                                </a>
-                            </div>
-                        </td>
-                    </tr>
-                `;
-
-        return;
-      }
-
-      const sorted = [...records].sort((a, b) => {
-        const dateA = parseRecordDate(a);
-        const dateB = parseRecordDate(b);
-
-        return (dateB ? dateB.getTime() : 0)
-          - (dateA ? dateA.getTime() : 0);
-      });
-
-      tbody.innerHTML = sorted.slice(0, 5).map(record => {
-        const score = getNumericScore(record);
-        const category = getCategory(record);
-        const date = parseRecordDate(record);
-
-        let badgeClass = "";
-
-        if (category === "High") {
-          badgeClass = "category-high";
-        } else if (category === "Average") {
-          badgeClass = "category-average";
-        } else if (category === "Low") {
-          badgeClass = "category-low";
-        }
-
-        const displayCategory =
-          record.performance_category || "Unknown";
-
-        const displayDate = date
-          ? date.toLocaleString("en-IN", {
-            day: "2-digit",
-            month: "short",
-            year: "numeric",
-            hour: "2-digit",
-            minute: "2-digit"
-          })
-          : "Date unavailable";
-
-        const modelName = record.model_used || "ML Model";
-
-        return `
-                    <tr>
-                        <td class="record-id">#${escapeHTML(record.id ?? "—")}</td>
-
-                        <td>${escapeHTML(displayDate)}</td>
-
-                        <td class="score-cell">
-                            ${score === null ? "—" : score.toFixed(2)}
-                        </td>
-
-                        <td>
-                            <span class="category-badge ${badgeClass}">
-                                ${escapeHTML(displayCategory)}
-                            </span>
-                        </td>
-
-                        <td>${escapeHTML(modelName)}</td>
-                    </tr>
-                `;
-      }).join("");
-    }
-
-    function parseRecordDate(record) {
-      const rawDate =
-        record.created_at ||
-        record.date ||
-        record.timestamp;
-
-      if (!rawDate) {
-        return null;
-      }
-
-      const date = new Date(rawDate);
-
-      return Number.isNaN(date.getTime()) ? null : date;
-    }
-
-    function escapeHTML(value) {
-      return String(value)
+    /* =========================================================
+       EduPredict Landing Page Controller
+       Theme management, mobile navigation, and live API fetch
+       ========================================================= */
+
+    const API_BASE_URL = "http://127.0.0.1:5000";
+
+    function escapeHTML(str) {
+      return String(str)
         .replace(/&/g, "&amp;")
         .replace(/</g, "&lt;")
         .replace(/>/g, "&gt;")
@@ -2027,24 +922,129 @@
         .replace(/'/g, "&#039;");
     }
 
-    function showEmptyCharts(message) {
-      const sections = [
-        ["distributionContainer", "distributionEmpty"],
-        ["trendContainer", "trendEmpty"],
-        ["scoreChartContainer", "scoreEmpty"],
-        ["comparisonContainer", "comparisonEmpty"]
-      ];
-
-      sections.forEach(([containerId, emptyId]) => {
-        document.getElementById(containerId).hidden = true;
-
-        const empty = document.getElementById(emptyId);
-        empty.hidden = false;
-        empty.textContent = message;
-      });
+    // Theme Management
+    function applyTheme(theme) {
+      document.documentElement.setAttribute("data-theme", theme);
+      localStorage.setItem("ep_theme", theme);
+      const icon = document.querySelector("#themeSwitch .knob i");
+      if (icon) {
+        icon.className = theme === "dark" ? "fa-solid fa-moon" : "fa-solid fa-sun";
+      }
     }
-  </script>
 
+    function initTheme() {
+      const saved = localStorage.getItem("ep_theme") ||
+        (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+      applyTheme(saved);
+    }
+
+    function toggleTheme() {
+      const current = document.documentElement.getAttribute("data-theme") || "light";
+      applyTheme(current === "dark" ? "light" : "dark");
+    }
+
+    // Live API Data Fetching
+    async function loadLandingStats() {
+      try {
+        const [statusRes, featuresRes, historyRes] = await Promise.all([
+          fetch(`${API_BASE_URL}/`).catch(() => null),
+          fetch(`${API_BASE_URL}/features`).catch(() => null),
+          fetch(`${API_BASE_URL}/history`).catch(() => null)
+        ]);
+
+        // Features count
+        if (featuresRes && featuresRes.ok) {
+          const featData = await featuresRes.json();
+          const features = Array.isArray(featData) ? featData : (featData.features || []);
+          const count = features.length || featData.total_features || 19;
+          const el = document.getElementById("landingFeatureCount");
+          if (el) el.textContent = count;
+        }
+
+        // Model Accuracy (R²)
+        if (statusRes && statusRes.ok) {
+          const statusData = await statusRes.json();
+          const r2 = statusData.r2 || statusData.r2_score || (statusData.model_metrics && statusData.model_metrics.r2);
+          const el = document.getElementById("landingModelAccuracy");
+          if (el) el.textContent = r2 !== undefined ? (r2 * 100).toFixed(1) + "%" : "N/A";
+        } else {
+          const el = document.getElementById("landingModelAccuracy");
+          if (el && (el.textContent === "—" || el.textContent === "")) el.textContent = "N/A";
+        }
+
+        // History count, average score, and Hero Live Demo prediction card update
+        if (historyRes && historyRes.ok) {
+          const histData = await historyRes.json();
+          const records = Array.isArray(histData.history) ? histData.history : [];
+
+          const elTotal = document.getElementById("landingTotalPredictions");
+          if (elTotal) elTotal.textContent = records.length.toLocaleString();
+
+          const scores = records
+            .map(r => Number(r.predicted_score))
+            .filter(s => Number.isFinite(s));
+
+          const elAvg = document.getElementById("landingAverageScore");
+          if (elAvg) {
+            if (scores.length > 0) {
+              const avg = scores.reduce((sum, s) => sum + s, 0) / scores.length;
+              elAvg.textContent = avg.toFixed(1);
+            } else {
+              elAvg.textContent = "—";
+            }
+          }
+
+          // Update Live Demo Card with real backend data
+          const heroScore = document.getElementById("heroScore");
+          const heroSub = document.getElementById("heroSub");
+          const heroModel = document.getElementById("heroMetaModel");
+          const heroCategory = document.getElementById("heroMetaCategory");
+          const heroBadge = document.getElementById("heroBadge");
+
+          if (records.length > 0) {
+            const latest = records[0];
+            const scoreNum = Number(latest.predicted_score);
+            if (heroScore) heroScore.textContent = Number.isFinite(scoreNum) ? scoreNum.toFixed(1) + "%" : "—";
+            // Strictly no "Priya Mehta" or "Computer Science"
+            if (heroSub) heroSub.textContent = `Predicted exam score · ${latest.model_used || "Linear Regression"}`;
+            if (heroBadge) heroBadge.innerHTML = `<i class="fa-solid fa-bolt"></i> Live prediction`;
+            if (heroModel) heroModel.innerHTML = `<i class="fa-solid fa-clock-rotate-left"></i> Record #${latest.id ?? 1}`;
+            if (heroCategory) {
+              const cat = latest.performance_category || "Completed";
+              heroCategory.innerHTML = `<i class="fa-solid fa-circle-check"></i> ${escapeHTML(cat)}`;
+            }
+          } else {
+            if (heroScore) heroScore.textContent = "Ready";
+            if (heroSub) heroSub.textContent = "Predicted exam score";
+          }
+        }
+      } catch (err) {
+        console.warn("Could not fetch landing page metrics:", err);
+      }
+    }
+
+    // Initialization
+    document.addEventListener("DOMContentLoaded", () => {
+      initTheme();
+
+      const themeBtn = document.getElementById("themeSwitch");
+      if (themeBtn) {
+        themeBtn.addEventListener("click", toggleTheme);
+      }
+
+      const hamburger = document.getElementById("homeHamburgerBtn");
+      const mobileMenu = document.getElementById("homeMobileMenu");
+      if (hamburger && mobileMenu) {
+        hamburger.addEventListener("click", () => {
+          mobileMenu.classList.toggle("open");
+        });
+      }
+
+      // Fetch live statistics and live prediction from existing backend
+      loadLandingStats();
+    });
+  </script>
+  <script src="js/auth.js"></script>
 </body>
 
 </html>
