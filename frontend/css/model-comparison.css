@@ -1,0 +1,674 @@
+/* =====================================================
+   EDUPREDICT — MODEL COMPARISON BENCHMARK WIDGET & MODAL
+   Soft Icon Floating Trigger + Interactive Comparison Modal
+   Palette: #09637E · #088395 · #7AB2B2 · #EBF4F6
+   ===================================================== */
+
+/* ----------------- INLINE HEADING ACTIONS (Below Refresh Data) ----------------- */
+.analytics-heading-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.soft-corner-btn.inline-btn {
+  position: static;
+  background: transparent !important;
+  box-shadow: none !important;
+  border: 1.5px solid #088395;
+  padding: 6px 14px 6px 8px;
+  transition: all 0.25s ease;
+}
+
+.soft-corner-btn.inline-btn:hover {
+  background: rgba(8, 131, 149, 0.08) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(8, 131, 149, 0.16) !important;
+}
+
+html[data-theme="dark"] .soft-corner-btn.inline-btn {
+  background: transparent !important;
+  border-color: #088395;
+  box-shadow: none !important;
+}
+
+html[data-theme="dark"] .soft-corner-btn.inline-btn:hover {
+  background: rgba(8, 131, 149, 0.16) !important;
+}
+
+/* Ensure no floating corner button appears if inline button is present */
+body:has(#openBenchmarkBtn.inline-btn) .soft-corner-btn-wrap {
+  display: none !important;
+}
+
+/* ----------------- FLOATING SOFT ICON TRIGGER ----------------- */
+.soft-corner-btn-wrap {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 990;
+  display: flex;
+  align-items: center;
+}
+
+.soft-corner-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 18px 8px 10px;
+  border-radius: 40px;
+  border: 1.5px solid #088395;
+  background: var(--surface, #FFFFFF);
+  color: var(--text-primary, #072530);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 8px 26px rgba(8, 131, 149, 0.22);
+  transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  text-decoration: none;
+  user-select: none;
+}
+
+.soft-corner-btn .soft-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(8, 131, 149, 0.14);
+  color: #088395;
+  font-size: 14px;
+  box-shadow: 0 2px 6px rgba(8, 131, 149, 0.12);
+  transition: all 0.25s ease;
+  flex-shrink: 0;
+}
+
+.soft-corner-btn .corner-btn-text {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  line-height: 1.25;
+}
+
+.soft-corner-btn .corner-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-primary, var(--ink, #072530));
+}
+
+.soft-corner-btn .corner-sub {
+  font-size: 10px;
+  font-weight: 600;
+  color: #088395;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.soft-corner-btn .corner-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  border-radius: 12px;
+  background: rgba(8, 131, 149, 0.15);
+  color: #088395;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+  margin-left: 4px;
+  border: 1px solid rgba(8, 131, 149, 0.3);
+}
+
+.soft-corner-btn:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 12px 34px rgba(8, 131, 149, 0.36);
+  background: var(--surface-hover, var(--surface-alt, #EBF4F6));
+  border-color: #09637E;
+}
+
+.soft-corner-btn:hover .soft-icon {
+  background: #088395;
+  color: #FFFFFF;
+  transform: rotate(-8deg) scale(1.08);
+}
+
+html[data-theme="dark"] .soft-corner-btn {
+  background: #0C2128;
+  border-color: #088395;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.6);
+}
+
+html[data-theme="dark"] .soft-corner-btn .corner-title {
+  color: #F0F6F8;
+}
+
+html[data-theme="dark"] .soft-corner-btn .corner-sub {
+  color: #7AB2B2;
+}
+
+html[data-theme="dark"] .soft-corner-btn .corner-badge {
+  background: rgba(8, 131, 149, 0.28);
+  color: #38B289;
+  border-color: rgba(56, 178, 137, 0.45);
+}
+
+html[data-theme="dark"] .soft-corner-btn:hover {
+  background: #113038;
+}
+
+/* ----------------- MODAL POP-UP OVERLAY ----------------- */
+.benchmark-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  background: rgba(7, 37, 48, 0.72);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.benchmark-modal-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.benchmark-modal-card {
+  width: 100%;
+  max-width: 960px;
+  max-height: 90vh;
+  background: var(--surface, #FFFFFF);
+  border: 1.5px solid var(--border, #C2DFE5);
+  border-radius: 20px;
+  box-shadow: 0 24px 60px rgba(7, 37, 48, 0.35);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transform: scale(0.95) translateY(12px);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.benchmark-modal-overlay.active .benchmark-modal-card {
+  transform: scale(1) translateY(0);
+}
+
+html[data-theme="dark"] .benchmark-modal-card {
+  background: #0C1E24;
+  border-color: #1A3E48;
+  box-shadow: 0 28px 70px rgba(0, 0, 0, 0.7);
+}
+
+/* ----------------- MODAL HEADER ----------------- */
+.benchmark-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border, #C2DFE5);
+  background: var(--surface-hover, #F7FAFC);
+  gap: 16px;
+}
+
+html[data-theme="dark"] .benchmark-modal-header {
+  background: #0E262E;
+  border-color: #1A3E48;
+}
+
+.benchmark-header-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.modal-soft-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(8, 131, 149, 0.2), rgba(30, 130, 96, 0.2));
+  color: #088395;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  border: 1.5px solid rgba(8, 131, 149, 0.35);
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(8, 131, 149, 0.15);
+}
+
+.benchmark-header-text h2 {
+  font-size: 18px;
+  font-weight: 800;
+  margin: 0 0 2px 0;
+  color: var(--text-primary, var(--ink, #072530));
+}
+
+.benchmark-header-text p {
+  font-size: 12px;
+  color: var(--text-muted, var(--ink-soft, #4B7885));
+  margin: 0;
+  line-height: 1.4;
+}
+
+html[data-theme="dark"] .benchmark-header-text h2 {
+  color: #F7FBFC;
+}
+
+html[data-theme="dark"] .benchmark-header-text p {
+  color: #B1DBE3;
+}
+
+.benchmark-close-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--surface, #FFFFFF);
+  border: 1px solid var(--border, #C2DFE5);
+  color: var(--text-muted, #4B7885);
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.benchmark-close-btn:hover {
+  background: #FDECEC;
+  border-color: #F87171;
+  color: #DC2626;
+  transform: rotate(90deg);
+}
+
+html[data-theme="dark"] .benchmark-close-btn {
+  background: #113038;
+  border-color: #1A3E48;
+}
+
+html[data-theme="dark"] .benchmark-close-btn:hover {
+  background: rgba(220, 38, 38, 0.2);
+  border-color: #F87171;
+  color: #FCA5A5;
+}
+
+/* ----------------- MODAL BODY SCROLLABLE ----------------- */
+.benchmark-modal-body {
+  padding: 24px;
+  overflow-y: auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.benchmark-modal-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.benchmark-modal-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.benchmark-modal-body::-webkit-scrollbar-thumb {
+  background: rgba(8, 131, 149, 0.3);
+  border-radius: 4px;
+}
+
+/* ----------------- CHAMPION CALLOUT BANNER ----------------- */
+.benchmark-champion-banner {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 18px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(8, 131, 149, 0.12), rgba(30, 130, 96, 0.14));
+  border: 1.5px solid rgba(8, 131, 149, 0.35);
+  color: var(--text-primary, #072530);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.benchmark-champion-banner .trophy-icon {
+  font-size: 22px;
+  color: #EAB308;
+  filter: drop-shadow(0 2px 4px rgba(234, 179, 8, 0.3));
+  flex-shrink: 0;
+}
+
+.benchmark-champion-banner strong {
+  color: #088395;
+  font-weight: 800;
+}
+
+html[data-theme="dark"] .benchmark-champion-banner {
+  background: rgba(8, 131, 149, 0.2);
+  border-color: rgba(56, 178, 137, 0.4);
+  color: #EBF4F6;
+}
+
+html[data-theme="dark"] .benchmark-champion-banner strong {
+  color: #38B289;
+}
+
+/* ----------------- 4 MODEL SCORE CARDS ----------------- */
+.benchmark-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
+
+.benchmark-card {
+  position: relative;
+  border-radius: 14px;
+  padding: 16px 14px;
+  background: var(--surface-hover, #F7FAFC);
+  border: 1.5px solid var(--border, #C2DFE5);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: all 0.22s ease;
+}
+
+html[data-theme="dark"] .benchmark-card {
+  background: #0E262E;
+  border-color: #1A3E48;
+}
+
+.benchmark-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+}
+
+.benchmark-card.winner {
+  background: linear-gradient(180deg, rgba(8, 131, 149, 0.14) 0%, var(--surface-hover, #F7FAFC) 100%);
+  border: 2px solid #088395;
+  box-shadow: 0 6px 20px rgba(8, 131, 149, 0.22);
+}
+
+html[data-theme="dark"] .benchmark-card.winner {
+  background: linear-gradient(180deg, rgba(8, 131, 149, 0.22) 0%, #0E262E 100%);
+  border-color: #38B289;
+  box-shadow: 0 8px 24px rgba(8, 131, 149, 0.3);
+}
+
+.benchmark-card-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  align-self: flex-start;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  background: rgba(9, 99, 126, 0.1);
+  color: #09637E;
+}
+
+.benchmark-card.winner .benchmark-card-tag {
+  background: #088395;
+  color: #FFFFFF;
+  box-shadow: 0 2px 6px rgba(8, 131, 149, 0.3);
+}
+
+.benchmark-card-name {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--text-primary, var(--ink, #072530));
+  margin: 0;
+}
+
+html[data-theme="dark"] .benchmark-card-name {
+  color: #F7FBFC;
+}
+
+.benchmark-metrics-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 11px;
+}
+
+.benchmark-metric-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: var(--text-muted, var(--ink-soft, #4B7885));
+}
+
+html[data-theme="dark"] .benchmark-metric-row {
+  color: #8EB7C1;
+}
+
+.benchmark-metric-row strong {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary, var(--ink, #072530));
+}
+
+html[data-theme="dark"] .benchmark-metric-row strong {
+  color: #F7FBFC;
+}
+
+.benchmark-card.winner .benchmark-metric-row strong.accent {
+  color: #088395;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+html[data-theme="dark"] .benchmark-card.winner .benchmark-metric-row strong.accent {
+  color: #38B289;
+}
+
+/* ----------------- INTERACTIVE CHARTS WRAPPER ----------------- */
+.benchmark-visual-section {
+  border-radius: 16px;
+  padding: 20px;
+  background: var(--surface-hover, #F7FAFC);
+  border: 1px solid var(--border, #C2DFE5);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+html[data-theme="dark"] .benchmark-visual-section {
+  background: #0E262E;
+  border-color: #1A3E48;
+}
+
+.benchmark-tab-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.benchmark-tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  background: var(--surface, #FFFFFF);
+  border: 1px solid var(--border, #C2DFE5);
+  color: var(--text-muted, #4B7885);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.benchmark-tab-btn:hover {
+  border-color: #088395;
+  color: #088395;
+}
+
+.benchmark-tab-btn.active {
+  background: #088395;
+  border-color: #088395;
+  color: #FFFFFF;
+  box-shadow: 0 2px 8px rgba(8, 131, 149, 0.28);
+}
+
+html[data-theme="dark"] .benchmark-tab-btn {
+  background: #113038;
+  border-color: #1A3E48;
+}
+
+html[data-theme="dark"] .benchmark-tab-btn.active {
+  background: #088395;
+  color: #FFFFFF;
+}
+
+.benchmark-chart-canvas-box {
+  width: 100%;
+  height: 290px;
+  position: relative;
+}
+
+/* ----------------- 4 REASONS WHY LINEAR REGRESSION IS BETTER ----------------- */
+.benchmark-reasons-title {
+  font-size: 14px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: #088395;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.benchmark-reasons-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+}
+
+.benchmark-reason-card {
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: var(--surface, #FFFFFF);
+  border: 1px solid var(--border, #C2DFE5);
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+html[data-theme="dark"] .benchmark-reason-card {
+  background: #0D2329;
+  border-color: #1A3E48;
+}
+
+.reason-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(8, 131, 149, 0.14);
+  color: #088395;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.reason-text h4 {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--text-primary, var(--ink, #072530));
+  margin: 0 0 4px 0;
+}
+
+html[data-theme="dark"] .reason-text h4 {
+  color: #F7FBFC;
+}
+
+.reason-text p {
+  font-size: 11.5px;
+  color: var(--text-muted, var(--ink-soft, #4B7885));
+  line-height: 1.5;
+  margin: 0;
+}
+
+html[data-theme="dark"] .reason-text p {
+  color: #B1DBE3;
+}
+
+html[data-theme="dark"] .benchmark-reasons-title {
+  color: #38B289;
+}
+
+/* ----------------- MODAL FOOTER ----------------- */
+.benchmark-modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 24px;
+  border-top: 1px solid var(--border, #C2DFE5);
+  background: var(--surface-hover, #F7FAFC);
+  font-size: 11px;
+  color: var(--text-muted, #4B7885);
+}
+
+html[data-theme="dark"] .benchmark-modal-footer {
+  background: #0E262E;
+  border-color: #1A3E48;
+}
+
+.benchmark-footer-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 700;
+  color: #1E8260;
+}
+
+html[data-theme="dark"] .benchmark-footer-badge {
+  color: #38B289;
+}
+
+/* ----------------- RESPONSIVE BREAKPOINTS ----------------- */
+@media (max-width: 860px) {
+  .benchmark-cards-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .benchmark-reasons-grid {
+    grid-template-columns: 1fr;
+  }
+  .benchmark-chart-canvas-box {
+    height: 240px;
+  }
+}
+
+@media (max-width: 600px) {
+  .soft-corner-btn-wrap {
+    bottom: 16px;
+    right: 16px;
+  }
+  .soft-corner-btn {
+    padding: 6px 12px 6px 8px;
+  }
+  .soft-corner-btn .corner-badge {
+    display: none;
+  }
+  .benchmark-cards-grid {
+    grid-template-columns: 1fr;
+  }
+  .benchmark-modal-header {
+    padding: 16px;
+  }
+  .benchmark-modal-body {
+    padding: 16px;
+  }
+}

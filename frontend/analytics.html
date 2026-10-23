@@ -12,6 +12,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/auth.css">
+  <link rel="stylesheet" href="css/model-comparison.css">
 
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -440,9 +441,24 @@
             </p>
           </div>
 
-          <button class="btn btn-secondary" id="refreshAnalyticsBtn" type="button">
-            <i class="fa-solid fa-arrows-rotate"></i> Refresh Data
-          </button>
+          <div class="analytics-heading-actions">
+            <button class="btn btn-secondary" id="refreshAnalyticsBtn" type="button">
+              <i class="fa-solid fa-arrows-rotate"></i> Refresh Data
+            </button>
+
+            &nbsp; &nbsp;
+
+            <!-- MODEL COMPARISON BUTTON (Directly Below Refresh Data) -->
+            <button class="soft-corner-btn inline-btn" id="openBenchmarkBtn" type="button" aria-haspopup="dialog"
+              aria-expanded="false" title="Compare Machine Learning Models: Why Linear Regression Wins">
+              <span class="soft-icon"><i class="fa-solid fa-scale-balanced"></i></span>
+              <span class="corner-btn-text">
+                <span class="corner-title">Model Comparison</span>
+                <span class="corner-sub">Why Linear Regression? <i class="fa-solid fa-arrow-trend-up"></i></span>
+              </span>
+              <span class="corner-badge">R² 77%</span>
+            </button>
+          </div>
         </section>
 
         <!-- STATUS MESSAGE -->
@@ -1373,6 +1389,7 @@
       loadAnalyticsData();
     });
   </script>
+  <script src="js/model-comparison.js"></script>
 </body>
 
 </html>
