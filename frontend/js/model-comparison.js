@@ -580,7 +580,10 @@
   // Fetch benchmark data from backend endpoint if available
   async function fetchBenchmarkData() {
     try {
-      const res = await fetch("http://127.0.0.1:5000/api/model-comparison");
+      const apiBase = (window.location.protocol === "http:" || window.location.protocol === "https:")
+        ? (window.location.port === "5500" || window.location.port === "3000" ? "http://127.0.0.1:5000" : window.location.origin)
+        : "http://127.0.0.1:5000";
+      const res = await fetch(`${apiBase}/api/model-comparison`);
       if (res.ok) {
         const data = await res.json();
         if (data && data.models && data.models.length > 0) {

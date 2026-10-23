@@ -230,7 +230,13 @@
     }
 
     async function loadSummaryStats() {
-        const apiBase = (api && api.API_BASE_URL) || "http://127.0.0.1:5000";
+        const apiBase = (api && api.API_BASE_URL) || (
+            (window.location.protocol === "http:" || window.location.protocol === "https:")
+                ? (window.location.port === "5500" || window.location.port === "3000" || window.location.port === "8080"
+                    ? "http://127.0.0.1:5000"
+                    : window.location.origin)
+                : "http://127.0.0.1:5000"
+        );
 
         try {
             const [statusRes, featuresRes, historyRes] = await Promise.all([

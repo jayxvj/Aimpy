@@ -1,0 +1,24 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# SQLite WAL and lock files
+*.db-shm
+*.db-wal
+*.db-journal
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+
+# Vercel
+.vercel/
+
+# IDE
+.idea/
+.vscode/
+*.swp

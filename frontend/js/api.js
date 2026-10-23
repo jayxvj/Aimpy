@@ -1,7 +1,10 @@
 "use strict";
 
-(() => {
-    const API_BASE_URL = "http://127.0.0.1:5000";
+    const API_BASE_URL = (window.location.protocol === "http:" || window.location.protocol === "https:")
+        ? (window.location.port === "5500" || window.location.port === "3000" || window.location.port === "8080"
+            ? "http://127.0.0.1:5000"
+            : window.location.origin)
+        : "http://127.0.0.1:5000";
 
     async function request(endpoint, options = {}) {
         let response;

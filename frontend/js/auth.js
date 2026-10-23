@@ -12,13 +12,15 @@
   // EduPredict API configuration:
   // Primary backend runs on port 5000 (backend/app.py)
   // Standalone auth service can also run on port 5001 (backend/auth_app.py)
+  const isWebOrigin = window.location.protocol.startsWith("http") && window.location.port !== "5500" && window.location.port !== "3000";
   const API_SERVERS = [
+    ...(isWebOrigin ? [window.location.origin] : []),
     "http://127.0.0.1:5000",
     "http://localhost:5000",
     "http://127.0.0.1:5001",
     "http://localhost:5001"
   ];
-  let activeApi = "http://127.0.0.1:5000";
+  let activeApi = isWebOrigin ? window.location.origin : "http://127.0.0.1:5000";
 
   // Resilient multi-endpoint fetch with auto-failover
   async function authFetch(endpoint, options = {}) {

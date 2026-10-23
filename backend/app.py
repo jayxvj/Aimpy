@@ -1,8 +1,10 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 from pathlib import Path
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
+import os
+import shutil
 import pandas as pd
 import joblib
 import json
@@ -20,9 +22,31 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 MODEL_DIR = BASE_DIR / "model"
 MODEL_PATH = MODEL_DIR / "best_model.joblib"
 FEATURE_PATH = MODEL_DIR / "feature_columns.json"
+FRONTEND_DIR = BASE_DIR / "frontend"
 
-# Database configuration
-DATABASE_PATH = BASE_DIR / "edupredict.db"
+# Database configuration: support writable /tmp on serverless environments like Vercel
+if os.environ.get("VERCEL"):
+    TMP_DIR = Path("/tmp")
+    tmp_edupredict = TMP_DIR / "edupredict.db"
+    tmp_auth = TMP_DIR / "auth.db"
+
+    # Copy bundled database to /tmp if not already present
+    if not tmp_edupredict.exists() and (BASE_DIR / "edupredict.db").exists():
+        try:
+            shutil.copy2(BASE_DIR / "edupredict.db", tmp_edupredict)
+        except Exception:
+            pass
+    if not tmp_auth.exists() and (BASE_DIR / "auth.db").exists():
+        try:
+            shutil.copy2(BASE_DIR / "auth.db", tmp_auth)
+        except Exception:
+            pass
+
+    DATABASE_PATH = tmp_edupredict
+    AUTH_DB_PATH = tmp_auth
+else:
+    DATABASE_PATH = BASE_DIR / "edupredict.db"
+    AUTH_DB_PATH = BASE_DIR / "auth.db"
 
 app.config["SQLALCHEMY_DATABASE_URI"] = (
     "sqlite:///" + DATABASE_PATH.as_posix()
@@ -89,9 +113,22 @@ if not isinstance(feature_columns, list) or not feature_columns:
     )
 
 
-# Home endpoint
+# Home endpoint - serves frontend/index.html or API status
 @app.route("/", methods=["GET"])
 def home():
+    index_file = FRONTEND_DIR / "index.html"
+    if index_file.exists():
+        return send_from_directory(FRONTEND_DIR, "index.html")
+    return jsonify({
+        "message": "EduPredict ML API is running!",
+        "model": MODEL_NAME,
+        "status": "online"
+    })
+
+
+@app.route("/api", methods=["GET"])
+@app.route("/api/health", methods=["GET"])
+def api_health():
     return jsonify({
         "message": "EduPredict ML API is running!",
         "model": MODEL_NAME,
@@ -280,8 +317,6 @@ def get_history():
 
 
 # -------------------- AUTHENTICATION ROUTES (auth.db) --------------------
-AUTH_DB_PATH = BASE_DIR / "auth.db"
-
 def get_auth_db_connection():
     conn = sqlite3.connect(AUTH_DB_PATH, timeout=30.0)
     conn.row_factory = sqlite3.Row
@@ -556,6 +591,18 @@ def auth_update_profile():
         })
     except Exception as e:
         return jsonify({"success": False, "error": f"Failed to update profile: {str(e)}"}), 500
+
+
+# Serve static frontend files (predict.html, analytics.html, css, js, assets, etc.)
+@app.route("/<path:filename>", methods=["GET"])
+def serve_frontend_file(filename):
+    file_path = FRONTEND_DIR / filename
+    if file_path.is_file():
+        return send_from_directory(FRONTEND_DIR, filename)
+    html_file = FRONTEND_DIR / f"{filename}.html"
+    if html_file.is_file():
+        return send_from_directory(FRONTEND_DIR, f"{filename}.html")
+    return jsonify({"error": "Resource not found"}), 404
 
 
 # Initialize database tables

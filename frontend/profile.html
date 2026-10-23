@@ -513,7 +513,10 @@
       try {
         const fetchFn = (window.EduPredictAuth && window.EduPredictAuth.fetch)
           ? (endpoint, opt) => window.EduPredictAuth.fetch(endpoint, opt)
-          : (endpoint, opt) => fetch(`http://127.0.0.1:5000${endpoint}`, opt);
+          : (endpoint, opt) => {
+              const base = window.location.protocol.startsWith("http") && window.location.port !== "5500" && window.location.port !== "3000" ? window.location.origin : "http://127.0.0.1:5000";
+              return fetch(`${base}${endpoint}`, opt);
+            };
 
         const res = await fetchFn(`/auth/profile/${encodeURIComponent(identifier)}`);
         if (res.ok) {
@@ -624,7 +627,10 @@
         try {
           const fetchFn = (window.EduPredictAuth && window.EduPredictAuth.fetch)
             ? (endpoint, opt) => window.EduPredictAuth.fetch(endpoint, opt)
-            : (endpoint, opt) => fetch(`http://127.0.0.1:5000${endpoint}`, opt);
+            : (endpoint, opt) => {
+                const base = window.location.protocol.startsWith("http") && window.location.port !== "5500" && window.location.port !== "3000" ? window.location.origin : "http://127.0.0.1:5000";
+                return fetch(`${base}${endpoint}`, opt);
+              };
 
           const res = await fetchFn("/auth/profile", {
             method: "PUT",
