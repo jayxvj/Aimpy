@@ -237,7 +237,7 @@
     .result-disclaimer {
       padding: 13px;
       margin-top: 18px;
-      color: var(--text-secondary);
+      color: #000000;
       background: #F6F8FB;
       border-radius: 11px;
       font-size: 10px;
@@ -325,7 +325,7 @@
   <div class="app-layout">
     <aside class="sidebar" id="sidebar" aria-label="Main navigation">
       <a class="brand" href="index.html" aria-label="EduPredict home">
-        <div class="brand-logo" aria-hidden="true">E</div>
+        <div class="brand-logo" aria-hidden="true"><img src="assets/logo.png" alt="EduPredict Logo"></div>
         <div>
           <div class="brand-name">Edu<span>Predict</span></div>
           <div class="brand-caption">Student analytics</div>
@@ -333,8 +333,7 @@
       </a>
       <div class="nav-label">Workspace</div>
       <nav class="nav-menu">
-        <a class="nav-link" href="index.html"><span class="nav-icon"
-            aria-hidden="true">⌂</span><span>Home</span></a>
+        <a class="nav-link" href="index.html"><span class="nav-icon" aria-hidden="true">⌂</span><span>Home</span></a>
         <a class="nav-link active" href="predict.html" aria-current="page"><span class="nav-icon"
             aria-hidden="true">✳</span><span>Predict performance</span></a>
         <a class="nav-link" href="analytics.html"><span class="nav-icon"
@@ -353,10 +352,10 @@
           <div class="breadcrumb">Workspace <span aria-hidden="true">/</span> <strong>Predict performance</strong></div>
         </div>
         <div class="topbar-right">
-          <button class="theme-switch" id="themeSwitch" type="button" aria-label="Toggle dark / light mode" title="Toggle dark / light mode">
+          <button class="theme-switch" id="themeSwitch" type="button" aria-label="Toggle dark / light mode"
+            title="Toggle dark / light mode">
             <span class="knob"><i class="fa-solid fa-moon"></i></span>
           </button>
-          <span class="status-indicator"><span class="status-dot"></span> Prediction workspace</span>
         </div>
       </header>
 
@@ -417,12 +416,6 @@
             </div>
           </article>
         </section>
-
-        <div class="alert alert-info section animate-in delay-1" role="note">
-          <span aria-hidden="true">ⓘ</span>
-          <div><strong>Before you begin</strong> Use values that reflect the student as accurately as possible. The
-            result is a model estimate, not a guaranteed exam score or a diagnosis of ability.</div>
-        </div>
 
         <div class="prediction-layout">
           <form id="predictionForm" class="card form-card animate-in delay-2" novalidate>
@@ -611,15 +604,14 @@
                 aria-valuemax="100" aria-valuenow="0" id="scoreProgress">
                 <div class="score-fill" id="scoreFill"></div>
               </div>
-              <div class="result-category"><span class="badge badge-neutral" id="resultCategory">Awaiting prediction</span>
+              <div class="result-category"><span class="badge badge-neutral" id="resultCategory">Awaiting
+                  prediction</span>
               </div>
               <div class="result-meta">
-                <div class="result-meta-item"><span>Model used</span><strong id="resultModel">Linear Regression</strong></div>
+                <div class="result-meta-item"><span>Model used</span><strong id="resultModel">Linear Regression</strong>
+                </div>
                 <div class="result-meta-item"><span>Generated at</span><strong id="resultTime">—</strong></div>
               </div>
-              <div class="result-disclaimer">This is a model-generated estimate, not a guaranteed result. Category
-                labels use the project's configured thresholds. Use the output as one source of information, not as the
-                sole basis for decisions about a student.</div>
               <div class="result-actions">
                 <button class="btn btn-primary btn-block" id="newPredictionButton" type="button">New prediction</button>
                 <a class="btn btn-secondary btn-block" href="history.html">View history →</a>
@@ -630,8 +622,7 @@
         </div>
       </div>
       <footer class="page-footer">
-        <span>© <span id="footerYear"></span> EduPredict</span>
-        <span>Predictions are estimates, not guarantees.</span>
+        <span>© <span id="footerYear"></span>2026 EduPredict</span>
       </footer>
     </main>
   </div>

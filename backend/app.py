@@ -7,6 +7,10 @@ import pandas as pd
 import joblib
 import json
 import math
+import sqlite3
+import random
+import string
+from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
 CORS(app)
@@ -220,9 +224,289 @@ def get_history():
         }), 500
 
 
+# -------------------- AUTHENTICATION ROUTES (auth.db) --------------------
+AUTH_DB_PATH = BASE_DIR / "auth.db"
+
+def get_auth_db_connection():
+    conn = sqlite3.connect(AUTH_DB_PATH, timeout=30.0)
+    conn.row_factory = sqlite3.Row
+    conn.execute("PRAGMA journal_mode = WAL;")
+    conn.execute("PRAGMA busy_timeout = 30000;")
+    return conn
+
+def init_auth_db():
+    create_sql = """
+    CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        unique_id TEXT UNIQUE NOT NULL,
+        username TEXT UNIQUE NOT NULL,
+        password_hash TEXT NOT NULL,
+        name TEXT NOT NULL,
+        college_name TEXT,
+        branch TEXT,
+        year TEXT,
+        location TEXT,
+        profile_pic TEXT,
+        created_at TEXT NOT NULL
+    );
+    """
+    for db_path in [AUTH_DB_PATH, DATABASE_PATH]:
+        try:
+            conn = sqlite3.connect(db_path, timeout=30.0)
+            conn.execute("PRAGMA journal_mode = WAL;")
+            conn.execute("PRAGMA busy_timeout = 30000;")
+            conn.execute(create_sql)
+            conn.commit()
+            conn.close()
+        except Exception as e:
+            print(f"init_auth_db error on {db_path}: {e}")
+
+    # Synchronize users from auth.db into edupredict.db so both databases match exactly
+    try:
+        auth_conn = get_auth_db_connection()
+        auth_users = auth_conn.execute("SELECT * FROM users").fetchall()
+        auth_conn.close()
+
+        edu_conn = sqlite3.connect(DATABASE_PATH, timeout=30.0)
+        edu_conn.row_factory = sqlite3.Row
+        for u in auth_users:
+            edu_conn.execute("""
+            INSERT OR REPLACE INTO users (id, unique_id, username, password_hash, name, college_name, branch, year, location, profile_pic, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """, (u["id"], u["unique_id"], u["username"], u["password_hash"], u["name"], u["college_name"], u["branch"], u["year"], u["location"], u["profile_pic"], u["created_at"]))
+        edu_conn.commit()
+        edu_conn.close()
+    except Exception as e:
+        print(f"User sync error: {e}")
+
+def generate_unique_id():
+    digits = ''.join(random.choices(string.digits, k=5))
+    return f"EDU-2026-{digits}"
+
+@app.after_request
+def add_cors_headers(response):
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, Accept"
+    response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
+    return response
+
+@app.route("/auth/<path:subpath>", methods=["OPTIONS"])
+def auth_options(subpath):
+    return "", 200
+
+@app.route("/auth/health", methods=["GET"])
+def auth_health():
+    return jsonify({
+        "status": "online",
+        "service": "EduPredict Auth Service (Port 5000)",
+        "version": "1.0.0"
+    })
+
+@app.route("/auth/register", methods=["POST"])
+def auth_register():
+    data = request.get_json(silent=True) or {}
+    username = (data.get("username") or "").strip()
+    password = data.get("password") or ""
+    name = (data.get("name") or "").strip()
+    college_name = (data.get("college_name") or "").strip()
+    branch = (data.get("branch") or "").strip()
+    year = (data.get("year") or "").strip()
+    location = (data.get("location") or "").strip()
+    profile_pic = data.get("profile_pic") or ""
+
+    if not username:
+        return jsonify({"success": False, "error": "Admin ID / Username is required"}), 400
+    if not password:
+        return jsonify({"success": False, "error": "Password is required"}), 400
+    if len(password) < 4:
+        return jsonify({"success": False, "error": "Password must be at least 4 characters"}), 400
+    if not name:
+        return jsonify({"success": False, "error": "Full Name is required"}), 400
+
+    conn = get_auth_db_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT id FROM users WHERE LOWER(username) = LOWER(?)", (username,))
+    if cursor.fetchone():
+        conn.close()
+        return jsonify({"success": False, "error": "Admin ID / Username already registered. Please login."}), 409
+
+    unique_id = generate_unique_id()
+    while True:
+        cursor.execute("SELECT id FROM users WHERE unique_id = ?", (unique_id,))
+        if not cursor.fetchone():
+            break
+        unique_id = generate_unique_id()
+
+    password_hash = generate_password_hash(password)
+    created_at = datetime.utcnow().isoformat()
+
+    # Save to both auth.db and edupredict.db to ensure single-source data consistency
+    for db_path in [AUTH_DB_PATH, DATABASE_PATH]:
+        try:
+            d_conn = sqlite3.connect(db_path, timeout=30.0)
+            d_conn.execute("""
+            INSERT OR REPLACE INTO users (unique_id, username, password_hash, name, college_name, branch, year, location, profile_pic, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """, (unique_id, username, password_hash, name, college_name, branch, year, location, profile_pic, created_at))
+            d_conn.commit()
+            d_conn.close()
+        except Exception as e:
+            print(f"Error saving user to {db_path}: {e}")
+
+    return jsonify({
+        "success": True,
+        "message": "Account registered successfully! Please log in with your credentials.",
+        "unique_id": unique_id
+    }), 201
+
+@app.route("/auth/login", methods=["POST"])
+def auth_login():
+    data = request.get_json(silent=True) or {}
+    username = (data.get("username") or "").strip()
+    password = data.get("password") or ""
+
+    if not username or not password:
+        return jsonify({"success": False, "error": "Admin ID and password are required"}), 400
+
+    conn = get_auth_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM users WHERE LOWER(username) = LOWER(?)", (username,))
+    row = cursor.fetchone()
+    conn.close()
+
+    if not row:
+        return jsonify({"success": False, "error": "Invalid Admin ID or password"}), 401
+
+    if not check_password_hash(row["password_hash"], password):
+        return jsonify({"success": False, "error": "Invalid Admin ID or password"}), 401
+
+    user_data = {
+        "unique_id": row["unique_id"],
+        "username": row["username"],
+        "name": row["name"],
+        "college_name": row["college_name"] or "",
+        "branch": row["branch"] or "",
+        "year": row["year"] or "",
+        "location": row["location"] or "",
+        "profile_pic": row["profile_pic"] or "",
+        "created_at": row["created_at"]
+    }
+
+    return jsonify({
+        "success": True,
+        "message": "Login successful",
+        "user": user_data
+    })
+
+@app.route("/auth/profile/<identifier>", methods=["GET"])
+def auth_get_profile(identifier):
+    conn = get_auth_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM users WHERE unique_id = ? OR LOWER(username) = LOWER(?)", (identifier, identifier))
+    row = cursor.fetchone()
+    conn.close()
+
+    if not row:
+        return jsonify({"success": False, "error": "User not found"}), 404
+
+    user_data = {
+        "unique_id": row["unique_id"],
+        "username": row["username"],
+        "name": row["name"],
+        "college_name": row["college_name"] or "",
+        "branch": row["branch"] or "",
+        "year": row["year"] or "",
+        "location": row["location"] or "",
+        "profile_pic": row["profile_pic"] or "",
+        "created_at": row["created_at"]
+    }
+    return jsonify({"success": True, "user": user_data})
+
+@app.route("/auth/profile", methods=["PUT"])
+def auth_update_profile():
+    try:
+        data = request.get_json(silent=True) or {}
+        unique_id = (data.get("unique_id") or "").strip()
+        username = (data.get("username") or "").strip()
+
+        if not unique_id and not username:
+            return jsonify({"success": False, "error": "User identifier is required"}), 400
+
+        name = (data.get("name") or "").strip()
+        college_name = (data.get("college_name") or "").strip()
+        branch = (data.get("branch") or "").strip()
+        year = (data.get("year") or "").strip()
+        location = (data.get("location") or "").strip()
+        profile_pic = data.get("profile_pic")
+
+        conn = get_auth_db_connection()
+        cursor = conn.cursor()
+        if unique_id:
+            cursor.execute("SELECT * FROM users WHERE unique_id = ?", (unique_id,))
+        else:
+            cursor.execute("SELECT * FROM users WHERE LOWER(username) = LOWER(?)", (username,))
+        row = cursor.fetchone()
+
+        if not row:
+            conn.close()
+            return jsonify({"success": False, "error": "User not found"}), 404
+
+        current_data = dict(row)
+        target_uid = current_data["unique_id"]
+        final_name = name or current_data["name"]
+        final_pic = profile_pic if profile_pic is not None else current_data.get("profile_pic", "")
+
+        cursor.execute("""
+        UPDATE users
+        SET name = ?, college_name = ?, branch = ?, year = ?, location = ?, profile_pic = ?
+        WHERE unique_id = ?
+        """, (final_name, college_name, branch, year, location, final_pic, target_uid))
+        conn.commit()
+
+        cursor.execute("SELECT * FROM users WHERE unique_id = ?", (target_uid,))
+        updated_row = cursor.fetchone()
+        updated_dict = dict(updated_row) if updated_row else current_data
+        conn.close()
+
+        # Also update edupredict.db so both databases remain identical
+        try:
+            edu_conn = sqlite3.connect(DATABASE_PATH, timeout=30.0)
+            edu_conn.execute("""
+            UPDATE users
+            SET name = ?, college_name = ?, branch = ?, year = ?, location = ?, profile_pic = ?
+            WHERE unique_id = ?
+            """, (final_name, college_name, branch, year, location, final_pic, target_uid))
+            edu_conn.commit()
+            edu_conn.close()
+        except Exception as sync_err:
+            print(f"Sync error to edupredict.db: {sync_err}")
+
+        updated_user = {
+            "unique_id": updated_dict["unique_id"],
+            "username": updated_dict["username"],
+            "name": updated_dict["name"],
+            "college_name": updated_dict.get("college_name") or "",
+            "branch": updated_dict.get("branch") or "",
+            "year": updated_dict.get("year") or "",
+            "location": updated_dict.get("location") or "",
+            "profile_pic": updated_dict.get("profile_pic") or "",
+            "created_at": updated_dict["created_at"]
+        }
+
+        return jsonify({
+            "success": True,
+            "message": "Profile updated successfully in database",
+            "user": updated_user
+        })
+    except Exception as e:
+        return jsonify({"success": False, "error": f"Failed to update profile: {str(e)}"}), 500
+
+
 # Initialize database tables
 with app.app_context():
     db.create_all()
+    init_auth_db()
 
 
 # Start Flask server

@@ -1,0 +1,17 @@
+Raw rows: 6607, columns: 20
+Duplicate rows removed: 0
+Rows dropped for missing values in training columns: 0
+Missing categorical values labelled 'Unknown' (reference file only): {'Teacher_Quality': 78, 'Parental_Education_Level': 90, 'Distance_from_Home': 67}
+Out-of-range final_exam_score: 1 row(s) removed (values [101], valid 0-100)
+Final rows: 6606
+
+Project dataset (dataset.csv) summary:
+       attendance  previous_score  study_hours  tutoring_sessions  final_exam_score
+count     6606.00         6606.00      6606.00            6606.00           6606.00
+mean        79.97           75.07        19.97               1.49             67.23
+std         11.55           14.40         5.99               1.23              3.87
+min         60.00           50.00         1.00               0.00             55.00
+25%         70.00           63.00        16.00               1.00             65.00
+50%         80.00           75.00        20.00               1.00             67.00
+75%         90.00           88.00        24.00               2.00             69.00
+max        100.00          100.00        44.00               8.00            100.00

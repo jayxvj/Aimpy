@@ -9,7 +9,59 @@
 (function () {
   "use strict";
 
-  const AUTH_API = "http://127.0.0.1:5001";
+  // EduPredict API configuration:
+  // Primary backend runs on port 5000 (backend/app.py)
+  // Standalone auth service can also run on port 5001 (backend/auth_app.py)
+  const API_SERVERS = [
+    "http://127.0.0.1:5000",
+    "http://localhost:5000",
+    "http://127.0.0.1:5001",
+    "http://localhost:5001"
+  ];
+  let activeApi = "http://127.0.0.1:5000";
+
+  // Resilient multi-endpoint fetch with auto-failover
+  async function authFetch(endpoint, options = {}) {
+    const cleanEndpoint = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
+    const serversToTry = [
+      activeApi,
+      ...API_SERVERS.filter((s) => s !== activeApi)
+    ];
+
+    let lastError = null;
+
+    for (const base of serversToTry) {
+      try {
+        const url = `${base}${cleanEndpoint}`;
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 7000);
+
+        const fetchOptions = {
+          ...options,
+          signal: controller.signal,
+          headers: {
+            "Content-Type": "application/json",
+            ...(options.headers || {})
+          }
+        };
+
+        const res = await fetch(url, fetchOptions);
+        clearTimeout(timeoutId);
+
+        // Valid HTTP response received; lock in this working endpoint
+        activeApi = base;
+        return res;
+      } catch (err) {
+        lastError = err;
+        console.warn(`Connection to ${base}${cleanEndpoint} failed:`, err.message);
+      }
+    }
+
+    // If every candidate server failed to connect:
+    throw new Error(
+      "Cannot connect to the EduPredict server. Please ensure the backend is running (python backend/app.py on port 5000)."
+    );
+  }
 
   // Session Management
   function getLoggedInUser() {
@@ -22,14 +74,34 @@
   }
 
   function saveUserSession(user) {
-    localStorage.setItem("ep_user", JSON.stringify(user));
-    localStorage.setItem("ep_token", "ep_auth_" + (user.unique_id || Date.now()));
+    try {
+      localStorage.setItem("ep_user", JSON.stringify(user));
+      localStorage.setItem("ep_token", "ep_auth_" + (user.unique_id || Date.now()));
+    } catch (e) {
+      console.warn("Storage quota handling:", e);
+      try {
+        const safeUser = Object.assign({}, user, { profile_pic: "" });
+        localStorage.setItem("ep_user", JSON.stringify(safeUser));
+      } catch (err) {}
+    }
   }
 
   function logoutUser() {
-    localStorage.removeItem("ep_user");
-    localStorage.removeItem("ep_token");
-    window.location.href = "index.html";
+    try {
+      localStorage.removeItem("ep_user");
+      localStorage.removeItem("ep_token");
+      sessionStorage.clear();
+    } catch (e) {
+      console.warn("Storage clear error:", e);
+    }
+
+    const current = window.location.pathname.toLowerCase();
+    const isHome = current.endsWith("index.html") || current.endsWith("/") || current === "";
+    if (isHome) {
+      window.location.reload();
+    } else {
+      window.location.replace("index.html");
+    }
   }
 
   // Detect current page
@@ -303,9 +375,8 @@
     clearAlert();
 
     try {
-      const res = await fetch(`${AUTH_API}/auth/register`, {
+      const res = await authFetch("/auth/register", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name,
           username,
@@ -334,7 +405,7 @@
       );
       document.getElementById("loginPassword").focus();
     } catch (err) {
-      showAlert(err.message || "Failed to register. Please check if auth service is running.");
+      showAlert(err.message || "Failed to register. Please check if backend server is running.");
     } finally {
       btn.disabled = false;
       btn.innerHTML = '<i class="fa-solid fa-user-plus"></i> <span>Register Admin Account</span>';
@@ -358,9 +429,8 @@
     clearAlert();
 
     try {
-      const res = await fetch(`${AUTH_API}/auth/login`, {
+      const res = await authFetch("/auth/login", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password })
       });
 
@@ -397,6 +467,7 @@
     if (navActions) {
       const existingBtn = navActions.querySelector(".btn-primary");
       let userPill = document.getElementById("navUserPill");
+      let signOutBtn = document.getElementById("navSignOutBtn");
 
       if (user) {
         if (existingBtn) existingBtn.style.display = "none";
@@ -407,46 +478,130 @@
           userPill.className = "auth-user-pill";
           navActions.insertBefore(userPill, navActions.querySelector(".hamburger-btn"));
         }
+        userPill.title = `My Profile (${user.name || user.username})`;
+        userPill.setAttribute("aria-label", "View My Profile");
         userPill.innerHTML = `
           <div class="auth-user-avatar">
             ${user.profile_pic ? `<img src="${user.profile_pic}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">` : (user.name ? user.name[0].toUpperCase() : 'U')}
           </div>
-          <span>${user.name || user.username}</span>
-          <i class="fa-solid fa-chevron-right" style="font-size:10px; opacity:0.7;"></i>
         `;
+
+        if (!signOutBtn) {
+          signOutBtn = document.createElement("button");
+          signOutBtn.id = "navSignOutBtn";
+          signOutBtn.type = "button";
+          signOutBtn.className = "auth-nav-signout-btn";
+          signOutBtn.title = "Sign Out";
+          signOutBtn.setAttribute("aria-label", "Sign Out");
+          signOutBtn.innerHTML = `<i class="fa-solid fa-arrow-right-from-bracket"></i>`;
+          signOutBtn.addEventListener("click", (e) => {
+            e.preventDefault();
+            logoutUser();
+          });
+          navActions.insertBefore(signOutBtn, navActions.querySelector(".hamburger-btn"));
+        }
       } else {
         if (existingBtn) existingBtn.style.display = "inline-flex";
         if (userPill) userPill.remove();
+        if (signOutBtn) signOutBtn.remove();
       }
     }
 
     // 2. Sidebar Profile Link (for workspace pages: predict, analytics, history, profile)
     const navMenu = document.querySelector(".nav-menu");
-    if (navMenu && !document.getElementById("sidebarProfileLink")) {
-      const profileLink = document.createElement("a");
-      profileLink.id = "sidebarProfileLink";
-      profileLink.className = `nav-link ${pathname.includes("profile.html") ? "active" : ""}`;
-      profileLink.href = "profile.html";
-      profileLink.innerHTML = `
-        <span class="nav-icon" aria-hidden="true"><i class="fa-solid fa-circle-user"></i></span>
-        <span>My Profile</span>
-      `;
-      navMenu.appendChild(profileLink);
+    if (navMenu) {
+      const existingProfileLinks = navMenu.querySelectorAll("a[href*='profile.html'], #sidebarProfileLink");
+      if (existingProfileLinks.length > 1) {
+        // Remove duplicates if more than one exists
+        for (let i = 1; i < existingProfileLinks.length; i++) {
+          existingProfileLinks[i].remove();
+        }
+      }
+
+      const getSidebarAvatarHtml = (u) => {
+        if (u && u.profile_pic) {
+          return `<img src="${u.profile_pic}" alt="Profile">`;
+        }
+        return `<i class="fa-solid fa-circle-user"></i>`;
+      };
+
+      if (existingProfileLinks.length === 0) {
+        const profileLink = document.createElement("a");
+        profileLink.id = "sidebarProfileLink";
+        profileLink.className = `nav-link ${pathname.includes("profile.html") ? "active" : ""}`;
+        profileLink.href = "profile.html";
+        profileLink.innerHTML = `
+          <span class="nav-icon" aria-hidden="true">${getSidebarAvatarHtml(user)}</span>
+          <span>My Profile</span>
+        `;
+        navMenu.appendChild(profileLink);
+      } else {
+        const link = existingProfileLinks[0];
+        link.id = "sidebarProfileLink";
+        const iconSpan = link.querySelector(".nav-icon");
+        if (iconSpan) {
+          iconSpan.innerHTML = getSidebarAvatarHtml(user);
+        }
+        if (pathname.includes("profile.html")) {
+          link.classList.add("active");
+          link.setAttribute("aria-current", "page");
+        }
+      }
     }
 
-    // 3. Topbar Profile Icon
+    // 3. Topbar Profile Icon (for workspace pages)
     const topbarRight = document.querySelector(".topbar-right");
-    if (topbarRight && !document.getElementById("topbarProfileIcon")) {
-      const profBtn = document.createElement("a");
-      profBtn.id = "topbarProfileIcon";
-      profBtn.href = "profile.html";
-      profBtn.className = "icon-button";
-      profBtn.title = user ? `${user.name} (${user.unique_id})` : "My Profile";
-      profBtn.style.textDecoration = "none";
-      profBtn.innerHTML = user && user.profile_pic 
-        ? `<img src="${user.profile_pic}" style="width:28px;height:28px;border-radius:50%;object-fit:cover;">`
-        : `<i class="fa-solid fa-circle-user" style="font-size:18px;"></i>`;
-      topbarRight.insertBefore(profBtn, topbarRight.firstChild);
+    if (topbarRight) {
+      const existingTopIcons = topbarRight.querySelectorAll("#topbarProfileIcon, a[href*='profile.html']");
+      if (existingTopIcons.length > 1) {
+        for (let i = 1; i < existingTopIcons.length; i++) {
+          existingTopIcons[i].remove();
+        }
+      }
+
+      const getTopbarAvatarHtml = (u) => {
+        if (u && u.profile_pic) {
+          return `<img src="${u.profile_pic}" alt="Profile">`;
+        }
+        const initial = (u && u.name) ? u.name[0].toUpperCase() : 'U';
+        return `<span style="font-weight:700;font-size:13px;color:#088395;">${initial}</span>`;
+      };
+
+      if (existingTopIcons.length === 0) {
+        const profBtn = document.createElement("a");
+        profBtn.id = "topbarProfileIcon";
+        profBtn.href = "profile.html";
+        profBtn.className = "topbar-profile-btn";
+        profBtn.title = user ? `${user.name} (${user.unique_id})` : "My Profile";
+        profBtn.setAttribute("aria-label", "My Profile");
+        profBtn.innerHTML = getTopbarAvatarHtml(user);
+        topbarRight.insertBefore(profBtn, topbarRight.firstChild);
+      } else {
+        const profBtn = existingTopIcons[0];
+        profBtn.id = "topbarProfileIcon";
+        profBtn.className = "topbar-profile-btn";
+        profBtn.title = user ? `${user.name} (${user.unique_id})` : "My Profile";
+        profBtn.setAttribute("aria-label", "My Profile");
+        profBtn.innerHTML = getTopbarAvatarHtml(user);
+      }
+    }
+  }
+
+  // Sync profile directly from backend DB so fresh picture and fields are guaranteed
+  async function syncProfileFromDB(user) {
+    if (!user || (!user.unique_id && !user.username)) return;
+    try {
+      const identifier = user.unique_id || user.username;
+      const res = await authFetch(`/auth/profile/${encodeURIComponent(identifier)}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.success && data.user) {
+          saveUserSession(data.user);
+          updateUIAfterAuth(data.user);
+        }
+      }
+    } catch (e) {
+      // Offline fallback: cached user remains in effect
     }
   }
 
@@ -462,10 +617,14 @@
         }, 150);
       } else {
         updateUIAfterAuth(user);
+        syncProfileFromDB(user);
       }
     } else {
       // On Landing Page:
       updateUIAfterAuth(user);
+      if (user) {
+        syncProfileFromDB(user);
+      }
 
       // If user is NOT logged in, clicking workspace links should trigger login popup
       if (!user) {
@@ -511,6 +670,9 @@
     logout: logoutUser,
     openModal: openAuthModal,
     closeModal: closeAuthModal,
-    API_URL: AUTH_API
+    get API_URL() {
+      return activeApi;
+    },
+    fetch: authFetch
   };
 })();

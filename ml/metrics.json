@@ -1,0 +1,44 @@
+{
+  "selected_model": "LinearRegression",
+  "model_version": "LinearRegression-202610210606",
+  "trained_at": "2026-10-21T06:06:59",
+  "dataset": "/mnt/user-data/outputs/EduPredict/ml/dataset.csv",
+  "total_records": 6606,
+  "train_rows": 5284,
+  "test_rows": 1322,
+  "tolerance_marks": 3,
+  "results": {
+    "LinearRegression": {
+      "mae": 1.114724349368679,
+      "rmse": 1.9547122171670728,
+      "r2_score": 0.711068015046465,
+      "within_3_marks": 0.9765506807866868,
+      "within_5_marks": 0.9962178517397882,
+      "cv_mae": 1.1851783247239152,
+      "cv_rmse": 2.355104690655901,
+      "cv_r2_score": 0.6293188922615159,
+      "cv_within_3_marks": 0.9722979109900091,
+      "cv_within_5_marks": 0.9925825007568877
+    },
+    "RandomForest": {
+      "mae": 1.2042398534948477,
+      "rmse": 2.031096878515252,
+      "r2_score": 0.6880455078247227,
+      "within_3_marks": 0.9659606656580938,
+      "within_5_marks": 0.9947049924357034,
+      "cv_mae": 1.3058114570704973,
+      "cv_rmse": 2.438271611904565,
+      "cv_r2_score": 0.6026765645213887,
+      "cv_within_3_marks": 0.9536784741144414,
+      "cv_within_5_marks": 0.9910687254011504
+    }
+  },
+  "feature_importance": {
+    "attendance": 0.5445130531607995,
+    "previous_score": 0.04831252679473517,
+    "study_hours": 0.32306335818970233,
+    "tutoring_sessions": 0.03777174765856402,
+    "access_to_resources": 0.04633931419619888
+  },
+  "data_note": "Synthetic dataset (Kaggle 'Student Performance Factors'). Scores describe this dataset, not real students."
+}

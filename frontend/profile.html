@@ -200,7 +200,7 @@
     <!-- SIDEBAR -->
     <aside class="sidebar" id="sidebar" aria-label="Main navigation">
       <a href="index.html" class="brand" aria-label="EduPredict Home">
-        <div class="brand-logo" aria-hidden="true">E</div>
+        <div class="brand-logo" aria-hidden="true"><img src="assets/logo.png" alt="EduPredict Logo"></div>
         <div>
           <div class="brand-name">Edu<span>Predict</span></div>
           <div class="brand-caption">Student Analytics</div>
@@ -226,7 +226,7 @@
           <span class="nav-icon" aria-hidden="true">◷</span>
           <span>Prediction history</span>
         </a>
-        <a href="profile.html" class="nav-link active" aria-current="page">
+        <a href="profile.html" class="nav-link active" id="sidebarProfileLink" aria-current="page">
           <span class="nav-icon" aria-hidden="true"><i class="fa-solid fa-circle-user"></i></span>
           <span>My Profile</span>
         </a>
@@ -254,10 +254,6 @@
             title="Toggle dark / light mode">
             <span class="knob"><i class="fa-solid fa-moon"></i></span>
           </button>
-          <div class="status-indicator">
-            <span class="status-dot"></span>
-            Profile Verified
-          </div>
         </div>
       </header>
 
@@ -410,8 +406,8 @@
 
     let currentProfilePic = "";
 
-    function loadProfileData() {
-      const user = window.EduPredictAuth ? window.EduPredictAuth.getUser() : null;
+    function loadProfileData(providedUser) {
+      const user = providedUser || (window.EduPredictAuth ? window.EduPredictAuth.getUser() : null);
       if (!user) return;
 
       document.getElementById("sidebarProfileName").textContent = user.name || "Administrator";
@@ -435,6 +431,24 @@
       // Avatar
       updateAvatarDisplay(user.profile_pic, user.name);
       currentProfilePic = user.profile_pic || "";
+
+      // Reflect in topbar and sidebar immediately
+      const topIcon = document.getElementById("topbarProfileIcon");
+      if (topIcon) {
+        if (user.profile_pic) {
+          topIcon.innerHTML = `<img src="${user.profile_pic}" alt="Profile">`;
+        } else {
+          topIcon.innerHTML = `<span style="font-weight:700;font-size:13px;color:#088395;">${(user.name ? user.name[0].toUpperCase() : 'U')}</span>`;
+        }
+      }
+      const sideIcon = document.querySelector("#sidebarProfileLink .nav-icon");
+      if (sideIcon) {
+        if (user.profile_pic) {
+          sideIcon.innerHTML = `<img src="${user.profile_pic}" alt="Profile">`;
+        } else {
+          sideIcon.innerHTML = `<i class="fa-solid fa-circle-user"></i>`;
+        }
+      }
     }
 
     function updateAvatarDisplay(picUrl, name) {
@@ -446,8 +460,82 @@
       }
     }
 
+    // Client-side canvas compression for avatars
+    function compressImage(file, maxWidth = 320, maxHeight = 320, quality = 0.88) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onerror = reject;
+        reader.onload = (e) => {
+          const img = new Image();
+          img.onerror = reject;
+          img.onload = () => {
+            let width = img.width;
+            let height = img.height;
+
+            if (width > height) {
+              if (width > maxWidth) {
+                height = Math.round((height * maxWidth) / width);
+                width = maxWidth;
+              }
+            } else {
+              if (height > maxHeight) {
+                width = Math.round((width * maxHeight) / height);
+                height = maxHeight;
+              }
+            }
+
+            const canvas = document.createElement("canvas");
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext("2d");
+            ctx.drawImage(img, 0, 0, width, height);
+
+            let dataUrl;
+            try {
+              dataUrl = canvas.toDataURL("image/webp", quality);
+              if (!dataUrl.startsWith("data:image/webp")) {
+                dataUrl = canvas.toDataURL("image/jpeg", quality);
+              }
+            } catch (err) {
+              dataUrl = canvas.toDataURL("image/jpeg", quality);
+            }
+            resolve(dataUrl);
+          };
+          img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    // Fetch fresh profile record directly from SQLite backend
+    async function fetchProfileFromDatabase(identifier) {
+      if (!identifier) return;
+      try {
+        const fetchFn = (window.EduPredictAuth && window.EduPredictAuth.fetch)
+          ? (endpoint, opt) => window.EduPredictAuth.fetch(endpoint, opt)
+          : (endpoint, opt) => fetch(`http://127.0.0.1:5000${endpoint}`, opt);
+
+        const res = await fetchFn(`/auth/profile/${encodeURIComponent(identifier)}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.success && data.user) {
+            if (window.EduPredictAuth && window.EduPredictAuth.saveUser) {
+              window.EduPredictAuth.saveUser(data.user);
+            }
+            loadProfileData(data.user);
+          }
+        }
+      } catch (e) {
+        // Fallback: cached user is already rendered
+      }
+    }
+
     document.addEventListener("DOMContentLoaded", () => {
       loadProfileData();
+      const initialUser = window.EduPredictAuth ? window.EduPredictAuth.getUser() : null;
+      if (initialUser) {
+        fetchProfileFromDatabase(initialUser.unique_id || initialUser.username);
+      }
 
       // Theme Switcher Sync
       const switchBtn = document.getElementById("themeSwitch");
@@ -483,40 +571,48 @@
         });
       });
 
-      // Avatar File Upload (Converts to Base64)
-      document.getElementById("avatarFileInput").addEventListener("change", (e) => {
+      // Avatar File Upload with Auto-Compression & Immediate Reflection
+      document.getElementById("avatarFileInput").addEventListener("change", async (e) => {
         const file = e.target.files[0];
         if (!file) return;
 
-        if (file.size > 2 * 1024 * 1024) {
-          alert("Image is too large. Please select an image under 2MB.");
-          return;
-        }
-
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          currentProfilePic = event.target.result;
+        try {
+          const compressed = await compressImage(file, 320, 320, 0.88);
+          currentProfilePic = compressed;
           updateAvatarDisplay(currentProfilePic, document.getElementById("profileName").value);
-        };
-        reader.readAsDataURL(file);
+
+          // Reflect immediately across this page's topbar and sidebar
+          const topIcon = document.getElementById("topbarProfileIcon");
+          if (topIcon) {
+            topIcon.innerHTML = `<img src="${currentProfilePic}" alt="Profile">`;
+          }
+          const sideIcon = document.querySelector("#sidebarProfileLink .nav-icon");
+          if (sideIcon) {
+            sideIcon.innerHTML = `<img src="${currentProfilePic}" alt="Profile">`;
+          }
+        } catch (err) {
+          console.error("Image processing error:", err);
+          alert("Could not process selected image. Please try a different photo.");
+        }
       });
 
       // Save Profile Form
       document.getElementById("profileEditForm").addEventListener("submit", async (e) => {
         e.preventDefault();
         const user = window.EduPredictAuth ? window.EduPredictAuth.getUser() : null;
-        if (!user || !user.unique_id) return;
+        if (!user || (!user.unique_id && !user.username)) return;
 
         const btn = document.getElementById("saveProfileBtn");
         const alertBox = document.getElementById("profileAlert");
 
         btn.disabled = true;
-        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving to Database...';
         alertBox.className = "auth-alert";
         alertBox.style.display = "none";
 
         const updatedData = {
           unique_id: user.unique_id,
+          username: user.username,
           name: document.getElementById("profileName").value.trim(),
           college_name: document.getElementById("profileCollege").value.trim(),
           branch: document.getElementById("profileBranch").value.trim(),
@@ -526,7 +622,11 @@
         };
 
         try {
-          const res = await fetch(`${window.EduPredictAuth.API_URL}/auth/profile`, {
+          const fetchFn = (window.EduPredictAuth && window.EduPredictAuth.fetch)
+            ? (endpoint, opt) => window.EduPredictAuth.fetch(endpoint, opt)
+            : (endpoint, opt) => fetch(`http://127.0.0.1:5000${endpoint}`, opt);
+
+          const res = await fetchFn("/auth/profile", {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(updatedData)
@@ -536,11 +636,11 @@
             throw new Error(data.error || "Failed to update profile");
           }
 
-          // Save updated data to localStorage
+          // Save updated data to localStorage and reload displays
           window.EduPredictAuth.saveUser(data.user);
-          loadProfileData();
+          loadProfileData(data.user);
 
-          alertBox.textContent = "✓ Profile details updated successfully!";
+          alertBox.textContent = "✓ Profile details and photo saved to database successfully!";
           alertBox.className = "auth-alert success visible";
           alertBox.style.display = "block";
         } catch (err) {
@@ -554,13 +654,23 @@
       });
 
       // Logout buttons
-      const handleLogout = () => {
-        if (confirm("Are you sure you want to sign out?")) {
+      const handleLogout = (e) => {
+        if (e) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+        if (window.EduPredictAuth && window.EduPredictAuth.logout) {
           window.EduPredictAuth.logout();
+        } else {
+          localStorage.removeItem("ep_user");
+          localStorage.removeItem("ep_token");
+          window.location.replace("index.html");
         }
       };
-      document.getElementById("logoutBtn").addEventListener("click", handleLogout);
-      document.getElementById("logoutBtnAlt").addEventListener("click", handleLogout);
+      const logoutBtn = document.getElementById("logoutBtn");
+      const logoutBtnAlt = document.getElementById("logoutBtnAlt");
+      if (logoutBtn) logoutBtn.addEventListener("click", handleLogout);
+      if (logoutBtnAlt) logoutBtnAlt.addEventListener("click", handleLogout);
 
       // Mobile Menu Toggle
       const menuToggle = document.getElementById("menuToggle");

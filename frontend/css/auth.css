@@ -335,30 +335,33 @@ select.auth-input {
   border: 1px solid #38B289;
 }
 
-/* User pill in navigation */
+/* User profile icon in navigation */
 .auth-user-pill {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 4px 12px 4px 6px;
-  border-radius: 30px;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 2px;
+  border-radius: 50%;
   background: var(--surface-hover);
-  border: 1px solid var(--border);
+  border: 1.5px solid var(--border);
   color: var(--text-primary);
-  font-size: 12px;
-  font-weight: 600;
   text-decoration: none;
-  transition: all 0.2s ease;
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(9, 99, 126, 0.12);
 }
 
 .auth-user-pill:hover {
   border-color: #088395;
-  transform: translateY(-1px);
+  transform: scale(1.08);
+  box-shadow: 0 4px 12px rgba(9, 99, 126, 0.24);
 }
 
 .auth-user-avatar {
-  width: 26px;
-  height: 26px;
+  width: 100%;
+  height: 100%;
   border-radius: 50%;
   object-fit: cover;
   background: #088395;
@@ -366,6 +369,82 @@ select.auth-input {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 700;
+  overflow: hidden;
+}
+
+/* Dedicated Sign Out icon button in navbar */
+.auth-nav-signout-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--surface-hover);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.auth-nav-signout-btn:hover {
+  background: #FDECEC;
+  border-color: #F87171;
+  color: #DC2626;
+  transform: scale(1.08);
+}
+
+html[data-theme="dark"] .auth-nav-signout-btn:hover {
+  background: rgba(220, 38, 38, 0.2);
+  border-color: #F87171;
+  color: #FCA5A5;
+}
+
+/* Topbar Profile Avatar Icon Button (predict, analytics, history, profile) */
+.topbar-profile-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 1.5px;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  color: var(--text-primary);
+  text-decoration: none;
+  cursor: pointer;
+  overflow: hidden;
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(9, 99, 126, 0.12);
+}
+
+.topbar-profile-btn:hover {
+  border-color: #088395;
+  transform: scale(1.08);
+  box-shadow: 0 4px 12px rgba(9, 99, 126, 0.24);
+}
+
+.topbar-profile-btn img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Sidebar navigation avatar thumbnail */
+.sidebar .nav-link .nav-icon img {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: inline-block;
+  vertical-align: middle;
+  box-shadow: 0 0 0 1.5px #088395;
 }
