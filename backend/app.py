@@ -118,7 +118,7 @@ if not isinstance(feature_columns, list) or not feature_columns:
 def home():
     index_file = FRONTEND_DIR / "index.html"
     if index_file.exists():
-        return send_from_directory(FRONTEND_DIR, "index.html")
+        return send_from_directory(str(FRONTEND_DIR), "index.html")
     return jsonify({
         "message": "EduPredict ML API is running!",
         "model": MODEL_NAME,
@@ -596,12 +596,15 @@ def auth_update_profile():
 # Serve static frontend files (predict.html, analytics.html, css, js, assets, etc.)
 @app.route("/<path:filename>", methods=["GET"])
 def serve_frontend_file(filename):
-    file_path = FRONTEND_DIR / filename
+    clean_name = filename[len("frontend/"):] if filename.startswith("frontend/") else filename
+    if clean_name in ("", "index", "index.html"):
+        return home()
+    file_path = FRONTEND_DIR / clean_name
     if file_path.is_file():
-        return send_from_directory(FRONTEND_DIR, filename)
-    html_file = FRONTEND_DIR / f"{filename}.html"
+        return send_from_directory(str(FRONTEND_DIR), clean_name)
+    html_file = FRONTEND_DIR / f"{clean_name}.html"
     if html_file.is_file():
-        return send_from_directory(FRONTEND_DIR, f"{filename}.html")
+        return send_from_directory(str(FRONTEND_DIR), f"{clean_name}.html")
     return jsonify({"error": "Resource not found"}), 404
 
 
