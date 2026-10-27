@@ -1,16 +1,16 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "functions": {
-    "backend/app.py": {
+    "api/index.py": {
       "includeFiles": "{model/**,*.db}"
     }
   },
   "rewrites": [
-    { "source": "/api/(.*)", "destination": "/backend/app.py" },
-    { "source": "/predict", "destination": "/backend/app.py" },
-    { "source": "/history", "destination": "/backend/app.py" },
-    { "source": "/features", "destination": "/backend/app.py" },
-    { "source": "/auth/(.*)", "destination": "/backend/app.py" },
+    { "source": "/api/(.*)", "destination": "/api/index.py" },
+    { "source": "/predict", "destination": "/api/index.py" },
+    { "source": "/history", "destination": "/api/index.py" },
+    { "source": "/features", "destination": "/api/index.py" },
+    { "source": "/auth/(.*)", "destination": "/api/index.py" },
     { "source": "/", "destination": "/frontend/index.html" },
     { "source": "/(.*)", "destination": "/frontend/$1" }
   ]
