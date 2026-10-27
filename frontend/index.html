@@ -963,7 +963,7 @@
     async function loadLandingStats() {
       try {
         const [statusRes, featuresRes, historyRes] = await Promise.all([
-          fetch(`${API_BASE_URL}/`).catch(() => null),
+          fetch(`${API_BASE_URL}/api/health`).catch(() => null),
           fetch(`${API_BASE_URL}/features`).catch(() => null),
           fetch(`${API_BASE_URL}/history`).catch(() => null)
         ]);

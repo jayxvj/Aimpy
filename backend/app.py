@@ -320,7 +320,6 @@ def get_history():
 def get_auth_db_connection():
     conn = sqlite3.connect(AUTH_DB_PATH, timeout=30.0)
     conn.row_factory = sqlite3.Row
-    conn.execute("PRAGMA journal_mode = WAL;")
     conn.execute("PRAGMA busy_timeout = 30000;")
     return conn
 
@@ -340,10 +339,11 @@ def init_auth_db():
         created_at TEXT NOT NULL
     );
     """
+    journal_mode = "DELETE" if os.environ.get("VERCEL") else "WAL"
     for db_path in [AUTH_DB_PATH, DATABASE_PATH]:
         try:
             conn = sqlite3.connect(db_path, timeout=30.0)
-            conn.execute("PRAGMA journal_mode = WAL;")
+            conn.execute(f"PRAGMA journal_mode = {journal_mode};")
             conn.execute("PRAGMA busy_timeout = 30000;")
             conn.execute(create_sql)
             conn.commit()

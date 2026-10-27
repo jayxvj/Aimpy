@@ -240,7 +240,7 @@
 
         try {
             const [statusRes, featuresRes, historyRes] = await Promise.all([
-                fetch(`${apiBase}/`).catch(() => null),
+                fetch(`${apiBase}/api/health`).catch(() => null),
                 fetch(`${apiBase}/features`).catch(() => null),
                 fetch(`${apiBase}/history`).catch(() => null)
             ]);
